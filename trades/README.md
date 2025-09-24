@@ -1,8 +1,138 @@
-# currency-exchange
+# Trading Microservice
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+## Specifications
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+### Overview
+**Role**: gRPC service for executing USD-based currency trades and business logic
+**Technology**: Quarkus + gRPC + JSON-B - H2 database
+**Port**: 9001 (gRPC)
+
+### Persistent Entities
+
+```java
+public class TradeRequest {
+    public String userId;
+    public String fromCurrency;    // Always "USD" 
+    public String toCurrency;      // EUR, GBP, JPY, etc.
+    public BigDecimal usdAmount;   // Amount in USD to convert
+}
+
+public class TradeResponse {
+    public Long tradeId;           // Generated unique trade ID
+    public TradeStatus status;     // PENDING, COMPLETED, FAILED, REJECTED, TIMEOUT
+    public BigDecimal usdAmount;   // Original USD amount
+    public String toCurrency;      // Target currency
+    public BigDecimal convertedAmount;  // Amount received in target currency
+    public BigDecimal exchangeRate;     // Rate used for conversion
+    public String message;         // Success/error message
+    public LocalDateTime timestamp;
+}
+
+public enum TradeStatus {
+    PENDING, COMPLETED, FAILED, REJECTED, TIMEOUT
+}
+```
+
+### gRPC Service Definition
+```protobuf
+service TradingService {
+    rpc ExecuteTrade(TradeRequest) returns (TradeResponse);
+    rpc ValidateTrade(TradeRequest) returns (ValidationResponse);
+}
+
+message TradeRequest {
+    string user_id = 1;
+    string from_currency = 2;    // Always "USD"
+    string to_currency = 3;      // EUR, GBP, JPY, etc.
+    double usd_amount = 4;
+}
+
+message TradeResponse {
+    int64 trade_id = 1;
+    string status = 2;           // COMPLETED, FAILED, etc.
+    double usd_amount = 3;
+    string to_currency = 4;
+    double converted_amount = 5;
+    double exchange_rate = 6;
+    string message = 7;
+    string timestamp = 8;
+}
+
+message ValidationResponse {
+    bool is_valid = 1;
+    string error_message = 2;
+}
+```
+
+### Business Logic
+
+#### ExecuteTrade
+- **Input validation**: Check userId, currency codes, amount > 0
+- **Currency validation**: Ensure toCurrency is supported (not USD)
+- **Rate retrieval**: Get current USD exchange rate (simulated)
+- **Amount calculation**: `convertedAmount = usdAmount * exchangeRate`
+- **Trade execution**: Generate trade ID and timestamp
+- **Response**: Return trade confirmation with all details
+
+#### ValidateTrade
+- **Pre-validation**: Check trade parameters without execution
+- **Business rules**: Validate currency support, amount limits
+- **Return**: Validation result with error details if invalid
+
+### Sample Trade Flows
+
+#### Successful Trade
+```
+Request:  userId="user123", fromCurrency="USD", toCurrency="EUR", usdAmount=100.00
+Response: tradeId=12345, status=COMPLETED, usdAmount=100.00, toCurrency="EUR", 
+          convertedAmount=92.17, exchangeRate=0.9217, message="Trade completed successfully"
+```
+
+#### Failed Trade
+```
+Request:  userId="user123", fromCurrency="USD", toCurrency="XYZ", usdAmount=100.00
+Response: tradeId=12346, status=REJECTED, message="Unsupported currency: XYZ"
+```
+
+### Stateless Design
+- **No storage**: Each trade is processed independently
+- **No state**: Service doesn't track trade history
+- **Rate simulation**: Generate exchange rates using algorithm (not external calls)
+- **Trade ID generation**: Use timestamp + random number
+- **Pure business logic**: Focus on trade execution rules
+
+### Simulated Exchange Rates
+```java
+// Internal rate calculation (no external service calls)
+private BigDecimal getExchangeRate(String toCurrency) {
+    switch(toCurrency) {
+        case "EUR": return BigDecimal.valueOf(0.9217 + randomFluctuation());
+        case "GBP": return BigDecimal.valueOf(0.7905 + randomFluctuation());
+        case "JPY": return BigDecimal.valueOf(149.25 + randomFluctuation());
+        // ... other currencies
+        default: throw new UnsupportedCurrencyException();
+    }
+}
+```
+
+### Configuration
+```properties
+quarkus.grpc.server.port=9001
+quarkus.grpc.server.host=0.0.0.0
+trading.supported-currencies=EUR,GBP,JPY,CHF,CAD,AUD
+trading.min-trade-amount=1.00
+trading.max-trade-amount=10000.00
+```
+
+### Error Handling
+- **REJECTED**: Invalid parameters, unsupported currency
+- **FAILED**: Business logic failure, amount out of range
+- **TIMEOUT**: Simulated processing timeout (for fault tolerance demos)
+
+### Health Checks
+- `GET /q/health` - Service health status (HTTP endpoint for health)
+- `GET /q/metrics` - Performance metrics
+- gRPC reflection enabled for service discovery
 
 ## Running the application in dev mode
 
