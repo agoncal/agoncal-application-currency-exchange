@@ -1,0 +1,96 @@
+{#include base.html}
+{#title}{user.name}'s Portfolio{/title}
+
+{#insert}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-baseline mb-4">
+            <h2>Current Portfolio Balance</h2>
+            <span class="badge bg-primary fs-6">{portfolios.size()} Currencies</span>
+        </div>
+    </div>
+</div>
+
+{#if portfolios.isEmpty()}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle me-2"></i>
+            No portfolio data available for your account.
+        </div>
+    </div>
+</div>
+{#else}
+<div class="row">
+    {#for portfolio in portfolios}
+    <div class="col-md-4 col-lg-2 mb-4">
+        <div class="card currency-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="mb-0">{portfolio.currency}</h6>
+                    </div>
+                    <div class="text-end">
+                        {#switch portfolio.currency}
+                            {#case 'AUD'}
+                                <i class="bi bi-currency-dollar text-success fs-4"></i>
+                            {#case 'EUR'}
+                                <i class="bi bi-currency-euro text-primary fs-4"></i>
+                            {#case 'GBP'}
+                                <i class="bi bi-currency-pound text-info fs-4"></i>
+                            {#case 'JPY'}
+                                <i class="bi bi-currency-yen text-warning fs-4"></i>
+                        {/switch}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="balance-amount text-primary">
+                        {portfolio.balance}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {/for}
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-table me-2"></i>Portfolio Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Currency</th>
+                                <th class="text-end">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {#for portfolio in portfolios}
+                            <tr>
+                                <td>
+                                    <strong>{portfolio.currency}</strong>
+                                </td>
+                                <td class="text-end">
+                                    <span class="badge bg-light text-dark">{portfolio.balance}</span>
+                                </td>
+                            </tr>
+                            {/for}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{/if}
+{/insert}
+{/include}
