@@ -1,4 +1,4 @@
-# Currency Exchange - Portfolio Service
+# Portfolio Service
 
 ## Specifications 
 
