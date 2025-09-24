@@ -1,8 +1,118 @@
-# currency-exchange
+# Currency Exchange - Portfolio Service
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+## Specifications 
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+### Overview
+**Role**: UI frontend + REST backend for managing user currency portfolios
+**Technology**: Quarkus + REST + JSON-B + H2 Database + HTML + Bootstrap + Quarkus Renarde + Quarkus Qute
+**Port**: 8080
+
+### Entities persisted in the H2 database
+
+```java
+public class Portfolio {
+    public Long id;
+    public String userId;
+    public String currency;
+    public BigDecimal balance;
+    public LocalDateTime lastUpdated;
+}
+```
+
+### DTOs sent to the Trades and Rates microservices
+
+```java
+public class Trade {
+    public Long id;
+    public String userId;
+    public String fromCurrency;
+    public String toCurrency;
+    public BigDecimal fromAmount;
+    public BigDecimal toAmount;
+    public BigDecimal exchangeRate;
+    public LocalDateTime timestamp;
+    public TradeStatus status;
+}
+
+public enum TradeStatus {
+    PENDING,     // Trade request received, waiting for processing
+    COMPLETED,   // Trade successfully executed
+    FAILED      // Trade failed due to business logic (insufficient funds, invalid currency, etc.)
+}
+
+public class Currency {
+    public String code;        // EUR, USD, GBP
+    public String name;        // Euro, US Dollar
+    public String symbol;      // €, $, £
+}
+
+public class ExchangeRate {
+    public String fromCurrency;
+    public String toCurrency;
+    public BigDecimal rate;
+    public LocalDateTime timestamp;
+}
+```
+
+### REST Endpoints
+
+The `PortfolioResource` defines the following APIs:
+
+```
+GET    /api/portfolio/{userId}           - Get user's portfolio balances
+GET    /api/portfolio/{userId}/history   - Get user's trade history
+GET    /api/portfolio/rates              - Get all current currency exchange rates
+POST   /api/portfolio/exchange           - Execute currency exchange
+GET    /api/portfolio/trades             - Get all trades (admin view)
+```
+
+### Transactional Service
+
+The `PortfolioResource` delegates each invocation to the `PortfolioService`
+
+
+### UI Endpoint
+```
+GET    /                                 - Single-page dashboard with:
+                                         • Exchange rates (top section)
+                                         • Currency exchange form (middle)
+                                         • Trade history (bottom section)
+                                         • Refresh button for rates
+```
+
+### External Service Calls
+- **Exchange Rate Service** (REST): Get current exchange rates via `/api/portfolio/rates` endpoint
+  ```
+  GET http://localhost:8082/api/rates
+  ```
+- **Trading Service** (gRPC): Execute trades when user submits exchange form
+  ```
+  ExecuteTrade(userId, fromCurrency, toCurrency, amount)
+  ```
+
+### API Usage Flow for Single Page:
+1. **Page Load**:
+    - Call `GET /api/portfolio/user123` - Get portfolio balances
+    - Call `GET /api/portfolio/rates` - Get current rates for display
+    - Call `GET /api/portfolio/user123/history` - Get trade history
+
+2. **Exchange Form Submit**:
+    - Call `POST /api/portfolio/exchange` - Execute the trade
+    - Refresh portfolio balances and trade history
+
+3. **Manual Refresh**:
+    - User clicks refresh button
+    - Call `GET /api/portfolio/rates` - Get updated exchange rates
+
+### Configuration
+```properties
+quarkus.http.port=8081
+exchange-rate-service/mp-rest/url=http://localhost:8082
+trading-service.host=localhost
+trading-service.port=9001
+```
+
+This streamlined approach provides a clear API structure where the Portfolio Service acts as a facade, aggregating data from external services and presenting it through its own consistent `/api/portfolio` namespace.
 
 ## Running the application in dev mode
 

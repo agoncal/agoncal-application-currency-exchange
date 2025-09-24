@@ -3,6 +3,6 @@ package org.agoncal.application.currencyexchange.portfolio;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 
 @QuarkusIntegrationTest
-class GreetingResourceIT extends GreetingResourceTest {
+class PortfolioResourceIT extends PortfolioResourceTest {
     // Execute the same tests but in packaged mode.
 }
