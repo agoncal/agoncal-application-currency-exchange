@@ -1,17 +1,14 @@
 package org.agoncal.application.currencyexchange.portfolio;
 
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-@Path("/api/portfolio")
-@Produces(MediaType.APPLICATION_JSON)
-public class PortfolioResource {
+@ApplicationScoped
+public class PortfolioService {
 
     // Hard-coded users
     private static final User USER1 = new User(1L, "John", "Doe", "john.doe@example.com");
@@ -43,7 +40,7 @@ public class PortfolioResource {
         )
     );
 
-    public static List<Portfolio> getUserPortfolio(String userId) {
+    public List<Portfolio> getUserPortfolio(String userId) {
         return USER_PORTFOLIOS.getOrDefault(userId, List.of());
     }
 }

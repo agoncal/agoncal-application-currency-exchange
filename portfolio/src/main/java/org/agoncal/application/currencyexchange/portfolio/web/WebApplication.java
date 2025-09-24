@@ -8,7 +8,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import org.agoncal.application.currencyexchange.portfolio.Portfolio;
-import org.agoncal.application.currencyexchange.portfolio.PortfolioResource;
+import org.agoncal.application.currencyexchange.portfolio.PortfolioService;
 import org.agoncal.application.currencyexchange.portfolio.User;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestForm;
@@ -22,11 +22,17 @@ public class WebApplication extends Controller {
     @Inject
     UserSession userSession;
 
+    @Inject
+    PortfolioService portfolioService;
+
     @CheckedTemplate
     static class Templates {
         public static native TemplateInstance index();
+
         public static native TemplateInstance signin(String loginError, String passwordError, String email);
+
         public static native TemplateInstance portfolio(User user, List<Portfolio> portfolios);
+
         public static native TemplateInstance profile(User user);
     }
 
@@ -102,7 +108,7 @@ public class WebApplication extends Controller {
         }
 
         User currentUser = userSession.getCurrentUser();
-        List<Portfolio> portfolios = PortfolioResource.getUserPortfolio(currentUser.email());
+        List<Portfolio> portfolios = portfolioService.getUserPortfolio(currentUser.email());
         LOG.info("Viewing portfolio for user: " + currentUser.email() + " with " + portfolios.size() + " entries");
 
         return Templates.portfolio(currentUser, portfolios);

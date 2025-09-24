@@ -18,21 +18,21 @@ public class RatesService {
     double fluctuationFactor;
 
     private static final Map<String, Currency> CURRENCIES = Map.of(
+        "AUD", new Currency("AUD", "Australian Dollar", "A$"),
+        "CAD", new Currency("CAD", "Canadian Dollar", "C$"),
+        "CHF", new Currency("CHF", "Swiss Franc", "CHF"),
         "EUR", new Currency("EUR", "Euro", "€"),
         "GBP", new Currency("GBP", "British Pound", "£"),
-        "JPY", new Currency("JPY", "Japanese Yen", "¥"),
-        "CHF", new Currency("CHF", "Swiss Franc", "CHF"),
-        "CAD", new Currency("CAD", "Canadian Dollar", "C$"),
-        "AUD", new Currency("AUD", "Australian Dollar", "A$")
+        "JPY", new Currency("JPY", "Japanese Yen", "¥")
     );
 
     private static final Map<String, BigDecimal> BASE_RATES = Map.of(
+        "AUD", BigDecimal.valueOf(1.5234),
+        "CAD", BigDecimal.valueOf(1.3425),
+        "CHF", BigDecimal.valueOf(0.9156),
         "EUR", BigDecimal.valueOf(0.9217),
         "GBP", BigDecimal.valueOf(0.7905),
-        "JPY", BigDecimal.valueOf(149.25),
-        "CHF", BigDecimal.valueOf(0.9156),
-        "CAD", BigDecimal.valueOf(1.3425),
-        "AUD", BigDecimal.valueOf(1.5234)
+        "JPY", BigDecimal.valueOf(149.25)
     );
 
     /**
@@ -43,12 +43,12 @@ public class RatesService {
      * more realistic, independent exchange rate movements.
      */
     private static final Map<String, Long> CURRENCY_SEEDS = Map.of(
-        "EUR", 1000L,
-        "GBP", 2000L,
-        "JPY", 3000L,
-        "CHF", 4000L,
-        "CAD", 5000L,
-        "AUD", 6000L
+        "AUD", 1000L,
+        "CAD", 2000L,
+        "CHF", 3000L,
+        "EUR", 4000L,
+        "GBP", 5000L,
+        "JPY", 6000L
     );
 
     public List<Currency> getSupportedCurrencies() {
