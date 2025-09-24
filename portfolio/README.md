@@ -47,8 +47,8 @@ public class Currency {
 }
 
 public class ExchangeRate {
-    public String fromCurrency;
-    public String toCurrency;
+    public Currency fromCurrency;
+    public Currency toCurrency;
     public BigDecimal rate;
     public LocalDateTime timestamp;
 }
@@ -60,10 +60,10 @@ The `PortfolioResource` defines the following APIs:
 
 ```
 GET    /api/portfolio/{userId}           - Get user's portfolio balances
-GET    /api/portfolio/{userId}/history   - Get user's trade history
+GET    /api/portfolio/rates/currencies   - Get all the available currencies
 GET    /api/portfolio/rates              - Get all current currency exchange rates
-POST   /api/portfolio/exchange           - Execute currency exchange
-GET    /api/portfolio/trades             - Get all trades (admin view)
+GET    /api/portfolio/rates/{to}          - Get the rate of a specific currency
+GET    /api/portfolio/trades/{userId}   - Get user's trade history
 ```
 
 ### Transactional Service
