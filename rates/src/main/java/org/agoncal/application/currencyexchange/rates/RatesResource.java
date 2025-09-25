@@ -24,7 +24,7 @@ public class RatesResource {
     }
 
     @GET
-    public List<ExchangeRate> getAllRates() {
+    public List<ExchangeRate> getAllCurrentRates() {
         return ratesService.getAllCurrentRates();
     }
 
