@@ -10,6 +10,8 @@ import jakarta.ws.rs.Path;
 import org.agoncal.application.currencyexchange.portfolio.Portfolio;
 import org.agoncal.application.currencyexchange.portfolio.PortfolioService;
 import org.agoncal.application.currencyexchange.portfolio.User;
+import org.agoncal.application.currencyexchange.portfolio.rates.ExchangeRate;
+import org.agoncal.application.currencyexchange.portfolio.rates.RatesService;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestForm;
 
@@ -25,13 +27,16 @@ public class WebApplication extends Controller {
     @Inject
     PortfolioService portfolioService;
 
+    @Inject
+    RatesService ratesService;
+
     @CheckedTemplate
     static class Templates {
         public static native TemplateInstance index();
 
         public static native TemplateInstance signin(String loginError, String passwordError, String email);
 
-        public static native TemplateInstance portfolio(User user, List<Portfolio> portfolios);
+        public static native TemplateInstance portfolio(User user, List<Portfolio> portfolios, List<ExchangeRate> exchangeRates);
 
         public static native TemplateInstance profile(User user);
     }
@@ -109,9 +114,27 @@ public class WebApplication extends Controller {
 
         User currentUser = userSession.getCurrentUser();
         List<Portfolio> portfolios = portfolioService.getUserPortfolio(currentUser.email());
+        List<ExchangeRate> exchangeRates = ratesService.getAllCurrentRates();
         LOG.info("Viewing portfolio for user: " + currentUser.email() + " with " + portfolios.size() + " entries");
 
-        return Templates.portfolio(currentUser, portfolios);
+        return Templates.portfolio(currentUser, portfolios, exchangeRates);
+    }
+
+    @POST
+    @Path("/refresh")
+    public TemplateInstance refreshExchangeRates() {
+        LOG.info("Entering refreshExchangeRates()");
+        if (!userSession.isLoggedIn()) {
+            LOG.info("Portfolio refresh attempt without authentication - redirecting to signin");
+            return signinPage();
+        }
+
+        User currentUser = userSession.getCurrentUser();
+        List<Portfolio> portfolios = portfolioService.getUserPortfolio(currentUser.email());
+        List<ExchangeRate> exchangeRates = ratesService.getAllCurrentRates();
+        LOG.info("Refreshing portfolio for user: " + currentUser.email() + " with updated exchange rates");
+
+        return Templates.portfolio(currentUser, portfolios, exchangeRates);
     }
 
     @Path("/profile")
