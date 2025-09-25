@@ -10,17 +10,6 @@ import static org.hamcrest.Matchers.*;
 class RatesResourceTest {
 
     @Test
-    void testGetCurrencies() {
-        given()
-          .when().get("/api/rates/currencies")
-          .then()
-             .statusCode(200)
-             .contentType("application/json")
-             .body("size()", is(6))
-             .body("code", hasItems("EUR", "GBP", "JPY", "CHF", "CAD", "AUD"));
-    }
-
-    @Test
     void testGetAllRates() {
         given()
           .when().get("/api/rates")

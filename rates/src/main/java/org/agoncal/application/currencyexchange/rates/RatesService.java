@@ -26,7 +26,7 @@ public class RatesService {
         "JPY", new Currency("JPY", "Japanese Yen", "¥")
     );
 
-    private static final Map<String, BigDecimal> BASE_RATES = Map.of(
+    private static final Map<String, BigDecimal> EXCHANGE_RATES = Map.of(
         "AUD", BigDecimal.valueOf(1.5234),
         "CAD", BigDecimal.valueOf(1.3425),
         "CHF", BigDecimal.valueOf(0.9156),
@@ -51,12 +51,8 @@ public class RatesService {
         "JPY", 6000L
     );
 
-    public List<Currency> getSupportedCurrencies() {
-        return CURRENCIES.values().stream().toList();
-    }
-
     public List<ExchangeRate> getAllCurrentRates() {
-        return getSupportedCurrencies().stream()
+        return CURRENCIES.values().stream()
             .map(currency -> calculateRate(currency, LocalDateTime.now()))
             .toList();
     }
@@ -70,7 +66,7 @@ public class RatesService {
     }
 
     private ExchangeRate calculateRate(Currency currency, LocalDateTime timestamp) {
-        BigDecimal baseRate = BASE_RATES.get(currency.code());
+        BigDecimal baseRate = EXCHANGE_RATES.get(currency.code());
         if (baseRate == null) {
             throw new IllegalArgumentException("Unsupported currency: " + currency.code());
         }

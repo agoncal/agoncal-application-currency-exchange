@@ -18,12 +18,6 @@ public class RatesResource {
     RatesService ratesService;
 
     @GET
-    @Path("/currencies")
-    public List<Currency> getCurrencies() {
-        return ratesService.getSupportedCurrencies();
-    }
-
-    @GET
     public List<ExchangeRate> getAllCurrentRates() {
         return ratesService.getAllCurrentRates();
     }

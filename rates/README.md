@@ -11,17 +11,17 @@
 ### DTOs
 
 ```java
-public class Currency {
-    public String code;        // EUR, GBP, JPY, CHF, CAD, AUD
-    public String name;        // Euro, British Pound, Japanese Yen
-    public String symbol;      // €, £, ¥
-}
+public record Currency(
+    String code,    // EUR, GBP, JPY, CHF, CAD, AUD
+    String name,    // Euro, British Pound, Japanese Yen
+    String symbol   // €, £, ¥
+) {}
 
-public class ExchangeRate {
-    public String currency;       // EUR, GBP, JPY (target currency)
-    public BigDecimal rate;       // 0.9217 (1 USD = 0.9217 EUR)
-    public LocalDateTime timestamp;
-}
+public record ExchangeRate(
+    Currency currency,       // Target currency (EUR, GBP, JPY, etc.)
+    BigDecimal rate,         // Exchange rate (1 USD = 0.9217 EUR)
+    LocalDateTime timestamp  // When the rate was calculated
+) {}
 ```
 
 ### REST Endpoints
@@ -29,49 +29,49 @@ public class ExchangeRate {
 The `RatesResource` defines the following APIs:
 
 ```
-GET    /api/rates/currencies              - Get all supported currencies (excluding USD)
-GET    /api/rates                         - Get all current USD exchange rates
-GET    /api/rates/{to}                    - Get specific USD rate (USD to EUR: /api/rates/EUR)
+GET    /api/rates            - Get all current USD exchange rates
+GET    /api/rates/{to}       - Get specific USD rate (USD to EUR: /api/rates/EUR)
 ```
 
 ### Sample Responses
 
-#### GET /api/currencies
-```json
-[
-  {
-    "code": "EUR",
-    "name": "Euro",
-    "symbol": "€"
-  },
-  {
-    "code": "GBP",
-    "name": "British Pound",
-    "symbol": "£"
-  },
-  {
-    "code": "JPY",
-    "name": "Japanese Yen",
-    "symbol": "¥"
-  }
-]
-```
 
 #### GET /api/rates
 ```json
 [
   {
-    "currency": "EUR",
+    "currency": {
+      "code": "AUD",
+      "name": "Australian Dollar",
+      "symbol": "A$"
+    },
+    "rate": 1.5234,
+    "timestamp": "2024-01-15T10:30:15.123"
+  },
+  {
+    "currency": {
+      "code": "EUR",
+      "name": "Euro",
+      "symbol": "€"
+    },
     "rate": 0.9217,
     "timestamp": "2024-01-15T10:30:15.123"
   },
   {
-    "currency": "GBP",
+    "currency": {
+      "code": "GBP",
+      "name": "British Pound",
+      "symbol": "£"
+    },
     "rate": 0.7905,
     "timestamp": "2024-01-15T10:30:15.123"
   },
   {
-    "currency": "JPY",
+    "currency": {
+      "code": "JPY",
+      "name": "Japanese Yen",
+      "symbol": "¥"
+    },
     "rate": 149.25,
     "timestamp": "2024-01-15T10:30:15.123"
   }
@@ -81,7 +81,11 @@ GET    /api/rates/{to}                    - Get specific USD rate (USD to EUR: /
 #### GET /api/rates/EUR
 ```json
 {
-  "currency": "EUR",
+  "currency": {
+    "code": "EUR",
+    "name": "Euro",
+    "symbol": "€"
+  },
   "rate": 0.9217,
   "timestamp": "2024-01-15T10:30:15.123"
 }
@@ -90,9 +94,10 @@ GET    /api/rates/{to}                    - Get specific USD rate (USD to EUR: /
 ### Real-Time Rate Generation
 - **No storage**: Rates calculated on-demand for each request
 - **Algorithm**: Generate rates using current timestamp + currency-specific seed
-- **Fluctuation**: Rates vary slightly on each call to simulate market movement
+- **Fluctuation**: Configurable fluctuation factor (default: 0.02)
 - **Base rates**: USD to other currencies (1 USD = X target currency)
-- **Supported conversions**: USD → EUR, GBP, JPY, CHF, CAD, AUD
+- **Supported currencies**: AUD, CAD, CHF, EUR, GBP, JPY (hardcoded)
+- **Currency seeds**: Each currency has a unique seed (AUD: 1000L, CAD: 2000L, etc.)
 
 ### Sample Real-Time Rates
 ```
@@ -105,17 +110,19 @@ GET    /api/rates/{to}                    - Get specific USD rate (USD to EUR: /
 ```
 
 ### Business Logic
-- **On-demand calculation**: Each API call generates fresh rates
-- **Timestamp precision**: Microsecond-level timestamps
-- **Rate algorithm**: `baseRate + sin(currentTime + currencySeed) * fluctuation`
-- **No caching**: Pure stateless service
+- **On-demand calculation**: Each API call generates fresh rates via `RatesService`
+- **Timestamp precision**: LocalDateTime with nanosecond precision
+- **Rate algorithm**: `baseRate + sin(currentTime + currencySeed) * fluctuationFactor`
+- **Rounding**: Rates rounded to 4 decimal places (JPY to 2 decimal places)
+- **No caching**: Pure stateless service using @ApplicationScoped
 - **Currency validation**: Return 404 for unsupported currencies
+- **Dependency injection**: Uses @ConfigProperty for fluctuation factor configuration
 
 ### Configuration
 ```properties
 quarkus.http.port=8082
-exchange-rates.supported-currencies=EUR,GBP,JPY,CHF,CAD,AUD
 exchange-rates.fluctuation-factor=0.02
+quarkus.application.name=Exchange Rate Micro Service
 ```
 
 ### Health Checks
@@ -124,9 +131,11 @@ exchange-rates.fluctuation-factor=0.02
 - `GET /q/openapi` - OpenAPI specification
 
 ### Error Responses
-- **404**: Unsupported currency code
-- **500**: Rate calculation error
-- **503**: Service temporarily unavailable (for fault tolerance testing)
+- **404**: Unsupported currency code with JSON error message
+  ```json
+  {"error": "Unsupported currency: XYZ"}
+  ```
+- **500**: Rate calculation error (if thrown by service layer)
 
 ## Running the application in dev mode
 
