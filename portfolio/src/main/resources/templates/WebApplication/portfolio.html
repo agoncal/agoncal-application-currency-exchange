@@ -18,7 +18,6 @@
                 <div class="col-12">
                     <div class="d-flex justify-content-between align-items-baseline mb-4">
                         <h3>Current Portfolio Balance</h3>
-                        <span class="badge bg-primary fs-6">{portfolios.size()} Currencies</span>
                     </div>
                 </div>
             </div>
@@ -104,7 +103,62 @@
                 <div class="col-12">
                     <div class="d-flex justify-content-between align-items-baseline mb-4">
                         <h3>Buy Currencies</h3>
-                        <span class="badge bg-primary fs-6">Buy</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-arrow-left-right me-2"></i>Execute Currency Trade
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {#form uri:WebApplication.executeTrade}
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="usdAmount" class="form-label">USD Amount</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number"
+                                                   class="form-control"
+                                                   id="usdAmount"
+                                                   name="usdAmount"
+                                                   step="0.01"
+                                                   min="0.01"
+                                                   placeholder="0.00"
+                                                   required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="toCurrency" class="form-label">Target Currency</label>
+                                        <select class="form-select" id="toCurrency" name="toCurrency" required>
+                                            <option value="">Select Currency</option>
+                                            {#for exchangeRate in exchangeRates}
+                                                <option value="{exchangeRate.currency}">
+                                                    {exchangeRate.currency}
+                                                </option>
+                                            {/for}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3 d-flex align-items-end">
+                                        <button type="submit" class="btn btn-success w-100">
+                                            <i class="bi bi-currency-exchange me-2"></i>Execute Trade
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Trade will be executed at current market rates. All amounts are in USD.
+                                        </small>
+                                    </div>
+                                </div>
+                            {/form}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -114,7 +168,6 @@
                 <div class="col-12">
                     <div class="d-flex justify-content-between align-items-baseline mb-4">
                         <h3>Trade History</h3>
-                        <span class="badge bg-primary fs-6">Buy</span>
                     </div>
                 </div>
             </div>
@@ -124,32 +177,79 @@
                     <div class="card">
                         <div class="card-header">
                             <h5 class="card-title mb-0">
-                                <i class="bi bi-table me-2"></i>Portfolio Summary
+                                <i class="bi bi-clock-history me-2"></i>Trade History
                             </h5>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th>Currency</th>
-                                        <th class="text-end">Balance</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {#for portfolio in portfolios}
+                            {#if trades.isEmpty()}
+                                <div class="text-center py-4">
+                                    <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
+                                    <p class="text-muted mt-2">No trades executed yet</p>
+                                    <small class="text-muted">Your trade history will appear here after executing trades</small>
+                                </div>
+                            {#else}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
                                         <tr>
-                                            <td>
-                                                <strong>{portfolio.currency}</strong>
-                                            </td>
-                                            <td class="text-end">
-                                                <span class="badge bg-light text-dark">{portfolio.balance}</span>
-                                            </td>
+                                            <th>Date</th>
+                                            <th>USD Amount</th>
+                                            <th>Target Currency</th>
+                                            <th class="text-end">Exchange Rate</th>
+                                            <th class="text-end">Converted Amount</th>
+                                            <th class="text-center">Status</th>
                                         </tr>
-                                    {/for}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody>
+                                        {#for trade in trades}
+                                            <tr>
+                                                <td>
+                                                    <small class="text-muted">{trade.timestamp}</small>
+                                                </td>
+                                                <td>
+                                                    <strong class="text-primary">${trade.usdAmount}</strong>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary">{trade.toCurrency}</span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <small>{trade.exchangeRate}</small>
+                                                </td>
+                                                <td class="text-end">
+                                                    {#if trade.convertedAmount}
+                                                        <strong>{trade.convertedAmount} {trade.toCurrency}</strong>
+                                                    {#else}
+                                                        <span class="text-muted">-</span>
+                                                    {/if}
+                                                </td>
+                                                <td class="text-center">
+                                                    {#switch trade.status.name()}
+                                                        {#case 'COMPLETED'}
+                                                            <span class="badge bg-success">
+                                                                <i class="bi bi-check-circle me-1"></i>Completed
+                                                            </span>
+                                                        {#case 'PENDING'}
+                                                            <span class="badge bg-warning">
+                                                                <i class="bi bi-clock me-1"></i>Pending
+                                                            </span>
+                                                        {#case 'FAILED'}
+                                                            <span class="badge bg-danger">
+                                                                <i class="bi bi-x-circle me-1"></i>Failed
+                                                            </span>
+                                                    {/switch}
+                                                </td>
+                                            </tr>
+                                        {/for}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="mt-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Showing {trades.size()} trade{trades.size() == 1 ? '' : 's'}
+                                    </small>
+                                </div>
+                            {/if}
                         </div>
                     </div>
                 </div>

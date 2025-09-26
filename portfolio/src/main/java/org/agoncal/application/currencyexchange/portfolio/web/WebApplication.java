@@ -11,9 +11,11 @@ import org.agoncal.application.currencyexchange.portfolio.Portfolio;
 import org.agoncal.application.currencyexchange.portfolio.PortfolioService;
 import org.agoncal.application.currencyexchange.portfolio.User;
 import org.agoncal.application.currencyexchange.portfolio.rates.ExchangeRate;
+import org.agoncal.application.currencyexchange.portfolio.trades.Trade;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestForm;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class WebApplication extends Controller {
@@ -32,7 +34,7 @@ public class WebApplication extends Controller {
 
         public static native TemplateInstance signin(String loginError, String passwordError, String email);
 
-        public static native TemplateInstance portfolio(User user, List<Portfolio> portfolios, List<ExchangeRate> exchangeRates);
+        public static native TemplateInstance portfolio(User user, List<Portfolio> portfolios, List<ExchangeRate> exchangeRates, List<Trade> trades);
 
         public static native TemplateInstance profile(User user);
     }
@@ -111,9 +113,10 @@ public class WebApplication extends Controller {
         User currentUser = userSession.getCurrentUser();
         List<Portfolio> portfolios = portfolioService.getUserPortfolio(currentUser.email());
         List<ExchangeRate> exchangeRates = portfolioService.getAllCurrentRates();
-        LOG.info("Viewing portfolio for user: " + currentUser.email() + " with " + portfolios.size() + " entries");
+        List<Trade> trades = portfolioService.getAllTrades(currentUser.email());
+        LOG.info("Viewing portfolio for user: " + currentUser.email() + " with " + portfolios.size() + " entries and " + trades.size() + " trades");
 
-        return Templates.portfolio(currentUser, portfolios, exchangeRates);
+        return Templates.portfolio(currentUser, portfolios, exchangeRates, trades);
     }
 
     @POST
@@ -128,9 +131,10 @@ public class WebApplication extends Controller {
         User currentUser = userSession.getCurrentUser();
         List<Portfolio> portfolios = portfolioService.getUserPortfolio(currentUser.email());
         List<ExchangeRate> exchangeRates = portfolioService.getAllCurrentRates();
+        List<Trade> trades = portfolioService.getAllTrades(currentUser.email());
         LOG.info("Refreshing portfolio for user: " + currentUser.email() + " with updated exchange rates");
 
-        return Templates.portfolio(currentUser, portfolios, exchangeRates);
+        return Templates.portfolio(currentUser, portfolios, exchangeRates, trades);
     }
 
     @Path("/profile")
@@ -143,6 +147,37 @@ public class WebApplication extends Controller {
         User currentUser = userSession.getCurrentUser();
         LOG.info("Viewing profile for user: " + currentUser.email());
         return Templates.profile(currentUser);
+    }
+
+    @POST
+    @Path("/executeTrade")
+    public TemplateInstance executeTrade(@RestForm BigDecimal usdAmount, @RestForm String toCurrency) {
+        LOG.info("Entering executeTrade() with amount: " + usdAmount + " to currency: " + toCurrency);
+
+        if (!userSession.isLoggedIn()) {
+            LOG.info("Trade execution attempt without authentication - redirecting to signin");
+            return signinPage();
+        }
+
+        User currentUser = userSession.getCurrentUser();
+
+        try {
+            // Get current exchange rate for the target currency
+            ExchangeRate exchangeRate = portfolioService.getCurrentRate(toCurrency);
+
+            // Create and execute trade
+            Trade trade = new Trade(currentUser.email(), usdAmount, toCurrency, exchangeRate.rate());
+            portfolioService.executeTrade(trade);
+
+            LOG.info("Trade executed successfully for user: " + currentUser.email() +
+                     ", amount: " + usdAmount + ", currency: " + toCurrency);
+
+        } catch (Exception e) {
+            LOG.error("Trade execution failed for user: " + currentUser.email(), e);
+        }
+
+        // Redirect back to portfolio page to show updated data
+        return portfolio();
     }
 
     private User findUserByEmail(String email) {
