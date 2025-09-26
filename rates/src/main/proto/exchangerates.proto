@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "org.agoncal.application.currencyexchange.rates";
+option java_outer_classname = "ExchangeRateServiceProto";
+
+package exchangerates;
+
+service ExchangeRateService {
+    rpc GetAllCurrentRates(Empty) returns (ExchangeRateListResponse);
+    rpc GetCurrentRate(CurrencyRequest) returns (ExchangeRateResponse);
+}
+
+message Empty {}
+
+message ExchangeRate {
+    string currency = 1;       // Target currency code (EUR, GBP, JPY, etc.)
+    double rate = 2;           // Exchange rate (1 USD = 0.9217 EUR)
+    string timestamp = 3;      // When the rate was calculated (ISO format)
+}
+
+message CurrencyRequest {
+    string currency_code = 1;  // EUR, GBP, JPY, etc.
+}
+
+message ExchangeRateListResponse {
+    repeated ExchangeRate rates = 1;
+}
+
+message ExchangeRateResponse {
+    ExchangeRate rate = 1;
+}

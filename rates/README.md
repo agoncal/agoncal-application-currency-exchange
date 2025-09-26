@@ -4,90 +4,106 @@
 
 ### Overview
 
-**Role**: REST service providing real-time USD-based currency exchange rates
-**Technology**: Quarkus + REST + JSON-B (no storage, no database)
-**Port**: 8082
+**Role**: gRPC service providing real-time USD-based currency exchange rates
+**Technology**: Quarkus + gRPC + Protobuf (no storage, no database)
+**Port**: 8082 (gRPC)
 
-### DTOs
+### gRPC Service Definition
 
-```java
-public record Currency(
-    String code,    // EUR, GBP, JPY, CHF, CAD, AUD
-    String name,    // Euro, British Pound, Japanese Yen
-    String symbol   // €, £, ¥
-) {}
+```protobuf
+syntax = "proto3";
 
-public record ExchangeRate(
-    Currency currency,       // Target currency (EUR, GBP, JPY, etc.)
-    BigDecimal rate,         // Exchange rate (1 USD = 0.9217 EUR)
-    LocalDateTime timestamp  // When the rate was calculated
-) {}
+option java_multiple_files = true;
+option java_package = "org.agoncal.application.currencyexchange.rates";
+option java_outer_classname = "ExchangeRateServiceProto";
+
+package exchangerates;
+
+service ExchangeRateService {
+    rpc GetAllCurrentRates(Empty) returns (ExchangeRateListResponse);
+    rpc GetCurrentRate(CurrencyRequest) returns (ExchangeRateResponse);
+}
+
+message Empty {}
+
+message Currency {
+    string code = 1;    // EUR, GBP, JPY, CHF, CAD, AUD
+    string name = 2;    // Euro, British Pound, Japanese Yen
+    string symbol = 3;  // €, £, ¥
+}
+
+message ExchangeRate {
+    Currency currency = 1;     // Target currency (EUR, GBP, JPY, etc.)
+    double rate = 2;           // Exchange rate (1 USD = 0.9217 EUR)
+    string timestamp = 3;      // When the rate was calculated (ISO format)
+}
+
+message CurrencyRequest {
+    string currency_code = 1;  // EUR, GBP, JPY, etc.
+}
+
+message ExchangeRateListResponse {
+    repeated ExchangeRate rates = 1;
+}
+
+message ExchangeRateResponse {
+    ExchangeRate rate = 1;
+}
 ```
 
-### REST Endpoints
+### gRPC Service Methods
 
-The `RatesResource` defines the following APIs:
+The `ExchangeRateService` provides the following RPC methods:
 
 ```
-GET    /api/rates            - Get all current USD exchange rates
-GET    /api/rates/{to}       - Get specific USD rate (USD to EUR: /api/rates/EUR)
+GetAllCurrentRates(Empty) -> ExchangeRateListResponse         - Get all current USD exchange rates
+GetCurrentRate(CurrencyRequest) -> ExchangeRateResponse       - Get specific USD rate (USD to EUR, etc.)
 ```
 
-### Sample Responses
+### Sample gRPC Responses
 
-
-#### GET /api/rates
-```json
-[
-  {
-    "currency": {
-      "code": "AUD",
-      "name": "Australian Dollar",
-      "symbol": "A$"
-    },
-    "rate": 1.5234,
-    "timestamp": "2024-01-15T10:30:15.123"
-  },
-  {
-    "currency": {
-      "code": "EUR",
-      "name": "Euro",
-      "symbol": "€"
-    },
-    "rate": 0.9217,
-    "timestamp": "2024-01-15T10:30:15.123"
-  },
-  {
-    "currency": {
-      "code": "GBP",
-      "name": "British Pound",
-      "symbol": "£"
-    },
-    "rate": 0.7905,
-    "timestamp": "2024-01-15T10:30:15.123"
-  },
-  {
-    "currency": {
-      "code": "JPY",
-      "name": "Japanese Yen",
-      "symbol": "¥"
-    },
-    "rate": 149.25,
-    "timestamp": "2024-01-15T10:30:15.123"
+#### GetAllCurrentRates(Empty) → ExchangeRateListResponse
+```protobuf
+rates {
+  currency {
+    code: "AUD"
+    name: "Australian Dollar"
+    symbol: "A$"
   }
-]
+  rate: 1.5234
+  timestamp: "2024-01-15T10:30:15.123"
+}
+rates {
+  currency {
+    code: "EUR"
+    name: "Euro"
+    symbol: "€"
+  }
+  rate: 0.9217
+  timestamp: "2024-01-15T10:30:15.123"
+}
+rates {
+  currency {
+    code: "GBP"
+    name: "British Pound"
+    symbol: "£"
+  }
+  rate: 0.7905
+  timestamp: "2024-01-15T10:30:15.123"
+}
+# ... more rates
 ```
 
-#### GET /api/rates/EUR
-```json
-{
-  "currency": {
-    "code": "EUR",
-    "name": "Euro",
-    "symbol": "€"
-  },
-  "rate": 0.9217,
-  "timestamp": "2024-01-15T10:30:15.123"
+#### GetCurrentRate(CurrencyRequest{currency_code: "EUR"}) → ExchangeRateResponse
+```protobuf
+rate {
+  currency {
+    code: "EUR"
+    name: "Euro"
+    symbol: "€"
+  }
+  rate: 0.9217
+  timestamp: "2024-01-15T10:30:15.123"
 }
 ```
 
@@ -110,32 +126,60 @@ GET    /api/rates/{to}       - Get specific USD rate (USD to EUR: /api/rates/EUR
 ```
 
 ### Business Logic
-- **On-demand calculation**: Each API call generates fresh rates via `RatesService`
-- **Timestamp precision**: LocalDateTime with nanosecond precision
+- **On-demand calculation**: Each gRPC call generates fresh rates via `RatesService`
+- **Timestamp precision**: LocalDateTime converted to ISO string format
 - **Rate algorithm**: `baseRate + sin(currentTime + currencySeed) * fluctuationFactor`
 - **Rounding**: Rates rounded to 4 decimal places (JPY to 2 decimal places)
-- **No caching**: Pure stateless service using @ApplicationScoped
-- **Currency validation**: Return 404 for unsupported currencies
+- **No caching**: Pure stateless service using @ApplicationScoped and @GrpcService
 - **Dependency injection**: Uses @ConfigProperty for fluctuation factor configuration
 
 ### Configuration
 ```properties
-quarkus.http.port=8082
+quarkus.grpc.server.port=8082
+quarkus.grpc.server.host=0.0.0.0
 exchange-rates.fluctuation-factor=0.02
 quarkus.application.name=Exchange Rate Micro Service
+
+# Enable gRPC reflection for service discovery
+quarkus.grpc.server.enable-reflection-service=true
 ```
 
 ### Health Checks
-- `GET /q/health` - Service health status
-- `GET /q/metrics` - Performance metrics
-- `GET /q/openapi` - OpenAPI specification
+- `GET /q/health` - Service health status (HTTP endpoint)
+- `GET /q/metrics` - Performance metrics (HTTP endpoint)
+- gRPC reflection enabled for service discovery
 
-### Error Responses
-- **404**: Unsupported currency code with JSON error message
-  ```json
-  {"error": "Unsupported currency: XYZ"}
-  ```
-- **500**: Rate calculation error (if thrown by service layer)
+
+### gRPC Client Usage
+
+#### Java Client Example
+```java
+@GrpcClient
+ExchangeRateService exchangeRateService;
+
+// Get all current rates
+ExchangeRateListResponse rates = exchangeRateService
+    .getAllCurrentRates(Empty.newBuilder().build())
+    .await().atMost(Duration.ofSeconds(5));
+
+// Get specific rate
+CurrencyRequest request = CurrencyRequest.newBuilder()
+    .setCurrencyCode("EUR")
+    .build();
+
+ExchangeRateResponse response = exchangeRateService
+    .getCurrentRate(request)
+    .await().atMost(Duration.ofSeconds(5));
+
+ExchangeRate rate = response.getRate();
+// Process rate...
+```
+
+#### Client Configuration
+```properties
+quarkus.grpc.clients.exchangeRateService.host=localhost
+quarkus.grpc.clients.exchangeRateService.port=8082
+```
 
 ## Running the application in dev mode
 
@@ -145,7 +189,7 @@ You can run your application in dev mode that enables live coding using:
 ./mvnw quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8082/q/dev/> (HTTP port for dev UI, gRPC runs on same port).
 
 ## Packaging and running the application
 
