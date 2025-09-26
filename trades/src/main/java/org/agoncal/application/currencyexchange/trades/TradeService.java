@@ -1,6 +1,7 @@
 package org.agoncal.application.currencyexchange.trades;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.validation.Valid;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -15,26 +16,7 @@ public class TradeService {
     private final Map<String, List<Trade>> tradeHistory = new HashMap<>();
     private final Random random = new Random();
 
-    public Trade executeTrade(Trade trade) {
-        // Input validation
-        if (trade.userId == null || trade.userId.isBlank()) {
-            throw new IllegalArgumentException("User ID is required");
-        }
-        if (trade.toCurrency == null || trade.toCurrency.isBlank()) {
-            throw new IllegalArgumentException("Target currency is required");
-        }
-        if (trade.exchangeRate == null || trade.exchangeRate.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Exchange rate must be positive");
-        }
-        if (trade.usdAmount == null || trade.usdAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("USD amount must be positive");
-        }
-
-        // Set timestamp if not already set
-        if (trade.timestamp == null) {
-            trade.timestamp = java.time.LocalDateTime.now();
-        }
-
+    public Trade executeTrade(@Valid Trade trade) {
         // Calculate converted amount
         trade.convertedAmount = trade.usdAmount.multiply(trade.exchangeRate);
 

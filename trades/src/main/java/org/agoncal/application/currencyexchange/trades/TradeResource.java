@@ -30,13 +30,13 @@ public class TradeResource {
         } catch (IllegalArgumentException e) {
             LOG.warn("Invalid trade request: " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("error", e.getMessage()))
-                    .build();
+                .entity(Map.of("error", e.getMessage()))
+                .build();
         } catch (Exception e) {
             LOG.error("Error executing trade", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(Map.of("error", "Internal server error"))
-                    .build();
+                .entity(Map.of("error", "Internal server error"))
+                .build();
         }
     }
 
@@ -52,13 +52,13 @@ public class TradeResource {
         } catch (IllegalArgumentException e) {
             LOG.warn("Invalid request: " + e.getMessage());
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("error", e.getMessage()))
-                    .build();
+                .entity(Map.of("error", e.getMessage()))
+                .build();
         } catch (Exception e) {
             LOG.error("Error getting trade history for user: " + userId, e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(Map.of("error", "Internal server error"))
-                    .build();
+                .entity(Map.of("error", "Internal server error"))
+                .build();
         }
     }
 }
