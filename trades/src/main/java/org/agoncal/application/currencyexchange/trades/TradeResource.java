@@ -4,10 +4,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.jboss.logging.Logger;
-
-import java.util.List;
-import java.util.Map;
 
 @Path("/api/trades")
 @Produces(MediaType.APPLICATION_JSON)
