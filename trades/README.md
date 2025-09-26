@@ -3,28 +3,21 @@
 ## Specifications
 
 ### Overview
-**Role**: gRPC service for executing USD-based currency trades and business logic
-**Technology**: Quarkus + gRPC + no database (the history of TradeResponses is kept in a HashMap with the user id as a key, and a list of TradeResponses)
-**Port**: 9001 (gRPC)
+**Role**: REST service for executing USD-based currency trades and business logic
+**Technology**: Quarkus + REST + JSON-B + no database (the history of TradeResponses is kept in a HashMap with the user id as a key, and a list of TradeResponses)
+**Port**: 9001 (HTTP)
 
 ### Persistent Entities
 
 ```java
-public class TradeRequest {
+public class Trade {
     public String userId;
-    public String toCurrency;      // EUR, GBP, JPY, etc.
-    public BigDecimal exchangeRate;     // Rate used for conversion
-    public BigDecimal usdAmount;   // Amount in USD to convert
-}
-
-public class TradeResponse {
-    public Long tradeId;           // Generated unique trade ID
+    public LocalDateTime timestamp;
     public TradeStatus status;     // PENDING, COMPLETED, FAILED
     public BigDecimal usdAmount;   // Original USD amount
     public String toCurrency;      // Target currency
     public BigDecimal convertedAmount;  // Amount received in target currency
     public BigDecimal exchangeRate;     // Rate used for conversion
-    public LocalDateTime timestamp;
 }
 
 public enum TradeStatus {
@@ -32,78 +25,100 @@ public enum TradeStatus {
 }
 ```
 
-### gRPC Service Definition
-```protobuf
-service TradingService {
-    rpc ExecuteTrade(TradeRequest) returns (TradeResponse);
-    rpc GetAllTrades(userId) returns (List<TradeResponse>);
+### REST API Definition
+```
+POST /api/trades
+- Request Body: Trade (JSON)
+- Response: Trade (JSON)
+- Content-Type: application/json
+
+GET /api/trades/{userId}
+- Path Parameter: userId (String)
+- Response: List<Trade> (JSON)
+- Content-Type: application/json
+```
+
+#### JSON Request/Response Examples
+```json
+// Trade (for the request)
+{
+    "userId": "user123",
+    "toCurrency": "EUR",
+    "exchangeRate": 0.9217,
+    "usdAmount": 100.00
 }
 
-message TradeRequest {
-    string user_id = 1;
-    string to_currency = 2;      // EUR, GBP, JPY, etc.
-    double exchangeRate = 3;     // Rate used for conversion
-    double usd_amount = 4;
-}
-
-message TradeResponse {
-    int64 trade_id = 1;
-    string status = 2;           // COMPLETED, FAILED, etc.
-    double usd_amount = 3;
-    string to_currency = 4;
-    double converted_amount = 5;
-    double exchange_rate = 6;
-    string timestamp = 7;
-}
-
-message ValidationResponse {
-    bool is_valid = 1;
-    string error_message = 2;
+// Trade (for the response)
+{
+    "userId": "user123",
+    "timestamp": "2024-01-15T10:30:45"
+    "status": "COMPLETED",
+    "usdAmount": 100.00,
+    "toCurrency": "EUR",
+    "convertedAmount": 92.17,
+    "exchangeRate": 0.9217,
 }
 ```
 
 ### Business Logic
 
-#### ExecuteTrade
+#### POST /api/trades/execute
 - **Input validation**: Check currency codes, exchangeRate and usdAmount > 0
 - **Amount calculation**: `convertedAmount = usdAmount * exchangeRate`
 - **Random TradeStatus**: TradeStatus should mostly be COMPLETED. But randomly assign the other status (with a lower weight)
-- **Trade execution**: Generate trade ID and timestamp
-- **Response**: Return trade confirmation with all details
+- **Trade execution**: Generate trade timestamp
+- **Response**: Return trade confirmation with all details as JSON
 
-#### GetAllTrades
-- **Return**: Returns a list of trades for a given userId
+#### GET /api/trades/{userId}
+- **Return**: Returns a list of trades for a given userId as JSON array
 
 ### Sample Trade Flows
 
 #### Successful Trade
 ```
-Request:  userId="user123", exchangeRate="1.234", toCurrency="EUR", usdAmount=100.00
-Response: tradeId=12345, status=COMPLETED, usdAmount=100.00, toCurrency="EUR", 
-          convertedAmount=92.17, exchangeRate=1.234"
+POST /api/trades
+Request Body:
+{
+    "userId": "user123",
+    "toCurrency": "EUR",
+    "exchangeRate": 0.9217,
+    "usdAmount": 100.00
+}
+
+Response:
+{
+    "userId": "user123",
+    "status": "COMPLETED",
+    "usdAmount": 100.00,
+    "toCurrency": "EUR",
+    "convertedAmount": 92.17,
+    "exchangeRate": 0.9217,
+    "timestamp": "2024-01-15T10:30:45"
+}
 ```
 
 ### Stateless Design
-- **No storage**: Each trade is processed independently
-- **No state**: Service doesn't track trade history
-- **Rate simulation**: Generate exchange rates using algorithm (not external calls)
-- **Trade ID generation**: Use timestamp + random number
+- **In memory state**: Service stores all trade history in a hashmap
 - **Pure business logic**: Focus on trade execution rules
 
 
 ### Configuration
 ```properties
-quarkus.grpc.server.port=9001
-quarkus.grpc.server.host=0.0.0.0
+quarkus.http.port=9001
+quarkus.http.host=0.0.0.0
 ```
 
 ### Error Handling
-- **FAILED**: Invalid parameters, wrong amount
+- **FAILED status**: Invalid parameters, wrong amount
+- **HTTP 400**: Bad request for invalid input
+- **HTTP 404**: User not found for trade history
+- **HTTP 500**: Internal server error
 
 ### Health Checks
-- `GET /q/health` - Service health status (HTTP endpoint for health)
+- `GET /q/health` - Service health status
 - `GET /q/metrics` - Performance metrics
-- gRPC reflection enabled for service discovery
+- `GET /q/openapi` - OpenAPI specification
+- `GET /q/swagger-ui` - Swagger UI for API documentation
 
 ## Running the application in dev mode
 
