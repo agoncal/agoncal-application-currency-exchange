@@ -2,6 +2,8 @@ package org.agoncal.application.currencyexchange.trades;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import org.jboss.logging.Logger;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,14 +16,35 @@ import java.util.Random;
 @ApplicationScoped
 public class TradeService {
 
+    private static final Logger LOG = Logger.getLogger(TradeResource.class);
+
     private final Map<String, List<Trade>> tradeHistory = new HashMap<>();
     private final Random random = new Random();
 
-    public Trade executeTrade(@Valid Trade trade) {
+    public void executeTrade(@Valid Trade trade) {
+        LOG.info("Execute trade: " + trade);
+
         // Calculate converted amount
         BigDecimal convertedAmount = trade.usdAmount().multiply(trade.exchangeRate());
 
-        // Randomly assign status (mostly COMPLETED, but some FAILED with lower weight)
+        // Create new trade with converted amount
+        Trade executedTrade = new Trade(trade.userId(), getTradeStatus(), trade.usdAmount(), trade.toCurrency(), convertedAmount, trade.exchangeRate());
+
+        // Store trade in history
+        tradeHistory.computeIfAbsent(trade.userId(), k -> new ArrayList<>()).add(executedTrade);
+    }
+
+    public List<Trade> getAllTrades(@NotBlank String userId) {
+        LOG.info("Getting trade history for user: " + userId);
+
+        List<Trade> trades = tradeHistory.getOrDefault(userId, new ArrayList<>());
+
+        LOG.info("Returning " + trades.size() + " trades for user: " + userId);
+        return trades;
+    }
+
+    // Randomly assign status (mostly COMPLETED, but some FAILED with lower weight)
+    private TradeStatus getTradeStatus() {
         double statusRandom = random.nextDouble();
         TradeStatus status;
         if (statusRandom < 0.85) {
@@ -31,28 +54,6 @@ public class TradeService {
         } else {
             status = TradeStatus.FAILED;
         }
-
-        // Create new trade with calculated values (records are immutable)
-        Trade executedTrade = new Trade(
-            trade.userId(),
-            trade.timestamp() != null ? trade.timestamp() : LocalDateTime.now(),
-            status,
-            trade.usdAmount(),
-            trade.toCurrency(),
-            convertedAmount,
-            trade.exchangeRate()
-        );
-
-        // Store trade in history
-        tradeHistory.computeIfAbsent(trade.userId(), k -> new ArrayList<>()).add(executedTrade);
-
-        return executedTrade;
-    }
-
-    public List<Trade> getAllTrades(String userId) {
-        if (userId == null || userId.isBlank()) {
-            throw new IllegalArgumentException("User ID is required");
-        }
-        return tradeHistory.getOrDefault(userId, new ArrayList<>());
+        return status;
     }
 }

@@ -15,16 +15,8 @@ import static org.hamcrest.Matchers.greaterThan;
 class TradeResourceTest {
 
     @Test
-    void testExecuteTrade() {
-        Trade trade = new Trade(
-            "user123",
-            null, // timestamp will be set by service
-            null, // status will be set by service
-            new BigDecimal("100.00"),
-            "EUR",
-            null, // convertedAmount will be calculated
-            new BigDecimal("0.9217")
-        );
+    void shouldExecuteTrade() {
+        Trade trade = new Trade("user123", BigDecimal.valueOf(100), "EUR", BigDecimal.valueOf(0.92));
 
         given()
             .contentType(ContentType.JSON)
@@ -32,27 +24,12 @@ class TradeResourceTest {
             .when()
             .post("/api/trades")
             .then()
-            .statusCode(200)
-            .body("userId", is("user123"))
-            .body("toCurrency", is("EUR"))
-            .body("usdAmount", is(100.00f))
-            .body("exchangeRate", is(0.9217f))
-            .body("convertedAmount", is(92.17f))
-            .body("status", notNullValue())
-            .body("timestamp", notNullValue());
+            .statusCode(204);
     }
 
     @Test
-    void testExecuteTradeInvalidData() {
-        Trade trade = new Trade(
-            "user123",
-            null,
-            null,
-            new BigDecimal("100.00"),
-            "EUR",
-            null,
-            new BigDecimal("-1.0") // Invalid negative rate
-        );
+    void shouldNotExecuteTradeInvalidData() {
+        Trade trade = new Trade("", BigDecimal.valueOf(-10), "", BigDecimal.valueOf(-1));
 
         given()
             .contentType(ContentType.JSON)
@@ -60,12 +37,11 @@ class TradeResourceTest {
             .when()
             .post("/api/trades")
             .then()
-            .statusCode(500)
-            .body("error", notNullValue());
+            .statusCode(500);
     }
 
     @Test
-    void testGetAllTradesEmpty() {
+    void shouldGetAllTradesEmpty() {
         given()
             .when()
             .get("/api/trades/newuser")
@@ -75,17 +51,9 @@ class TradeResourceTest {
     }
 
     @Test
-    void testExecuteAndGetTrades() {
+    void shouldExecuteAndGetTrades() {
         // First, execute a trade
-        Trade trade = new Trade(
-            "testuser",
-            null,
-            null,
-            new BigDecimal("50.00"),
-            "GBP",
-            null,
-            new BigDecimal("0.7905")
-        );
+        Trade trade = new Trade("user456", BigDecimal.valueOf(100), "EUR", BigDecimal.valueOf(0.92));
 
         given()
             .contentType(ContentType.JSON)
@@ -93,19 +61,19 @@ class TradeResourceTest {
             .when()
             .post("/api/trades")
             .then()
-            .statusCode(200);
+            .statusCode(204);
 
         // Then retrieve trades for the user
         given()
             .when()
-            .get("/api/trades/testuser")
+            .get("/api/trades/user456")
             .then()
             .statusCode(200)
             .body("size()", greaterThan(0))
-            .body("[0].userId", is("testuser"))
-            .body("[0].toCurrency", is("GBP"))
-            .body("[0].usdAmount", is(50.00f))
-            .body("[0].exchangeRate", is(0.7905f));
+            .body("[0].userId", is("user456"))
+            .body("[0].toCurrency", is("EUR"))
+            .body("[0].usdAmount", is(100))
+            .body("[0].exchangeRate", is(0.92f));
     }
 
     @Test
