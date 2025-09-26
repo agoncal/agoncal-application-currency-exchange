@@ -27,9 +27,6 @@ public class WebApplication extends Controller {
     @Inject
     PortfolioService portfolioService;
 
-    @Inject
-    RatesService ratesService;
-
     @CheckedTemplate
     static class Templates {
         public static native TemplateInstance index();
@@ -114,7 +111,7 @@ public class WebApplication extends Controller {
 
         User currentUser = userSession.getCurrentUser();
         List<Portfolio> portfolios = portfolioService.getUserPortfolio(currentUser.email());
-        List<ExchangeRate> exchangeRates = ratesService.getAllCurrentRates();
+        List<ExchangeRate> exchangeRates = portfolioService.getAllCurrentRates();
         LOG.info("Viewing portfolio for user: " + currentUser.email() + " with " + portfolios.size() + " entries");
 
         return Templates.portfolio(currentUser, portfolios, exchangeRates);
@@ -131,7 +128,7 @@ public class WebApplication extends Controller {
 
         User currentUser = userSession.getCurrentUser();
         List<Portfolio> portfolios = portfolioService.getUserPortfolio(currentUser.email());
-        List<ExchangeRate> exchangeRates = ratesService.getAllCurrentRates();
+        List<ExchangeRate> exchangeRates = portfolioService.getAllCurrentRates();
         LOG.info("Refreshing portfolio for user: " + currentUser.email() + " with updated exchange rates");
 
         return Templates.portfolio(currentUser, portfolios, exchangeRates);
