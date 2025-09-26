@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.validation.Valid;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,22 +19,34 @@ public class TradeService {
 
     public Trade executeTrade(@Valid Trade trade) {
         // Calculate converted amount
-        trade.convertedAmount = trade.usdAmount.multiply(trade.exchangeRate);
+        BigDecimal convertedAmount = trade.usdAmount().multiply(trade.exchangeRate());
 
         // Randomly assign status (mostly COMPLETED, but some FAILED with lower weight)
         double statusRandom = random.nextDouble();
+        TradeStatus status;
         if (statusRandom < 0.85) {
-            trade.status = TradeStatus.COMPLETED;
+            status = TradeStatus.COMPLETED;
         } else if (statusRandom < 0.95) {
-            trade.status = TradeStatus.PENDING;
+            status = TradeStatus.PENDING;
         } else {
-            trade.status = TradeStatus.FAILED;
+            status = TradeStatus.FAILED;
         }
 
-        // Store trade in history
-        tradeHistory.computeIfAbsent(trade.userId, k -> new ArrayList<>()).add(trade);
+        // Create new trade with calculated values (records are immutable)
+        Trade executedTrade = new Trade(
+            trade.userId(),
+            trade.timestamp() != null ? trade.timestamp() : LocalDateTime.now(),
+            status,
+            trade.usdAmount(),
+            trade.toCurrency(),
+            convertedAmount,
+            trade.exchangeRate()
+        );
 
-        return trade;
+        // Store trade in history
+        tradeHistory.computeIfAbsent(trade.userId(), k -> new ArrayList<>()).add(executedTrade);
+
+        return executedTrade;
     }
 
     public List<Trade> getAllTrades(String userId) {

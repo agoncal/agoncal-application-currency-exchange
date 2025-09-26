@@ -21,11 +21,11 @@ public class TradeResource {
 
     @POST
     public Response executeTrade(Trade trade) {
-        LOG.info("Executing trade for user: " + trade.userId + ", currency: " + trade.toCurrency + ", amount: " + trade.usdAmount);
+        LOG.info("Executing trade for user: " + trade.userId() + ", currency: " + trade.toCurrency() + ", amount: " + trade.usdAmount());
 
         try {
             Trade executedTrade = tradeService.executeTrade(trade);
-            LOG.info("Trade executed successfully with status: " + executedTrade.status);
+            LOG.info("Trade executed successfully with status: " + executedTrade.status());
             return Response.ok(executedTrade).build();
         } catch (IllegalArgumentException e) {
             LOG.warn("Invalid trade request: " + e.getMessage());

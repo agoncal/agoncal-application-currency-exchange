@@ -16,11 +16,15 @@ class TradeResourceTest {
 
     @Test
     void testExecuteTrade() {
-        Trade trade = new Trade();
-        trade.userId = "user123";
-        trade.toCurrency = "EUR";
-        trade.exchangeRate = new BigDecimal("0.9217");
-        trade.usdAmount = new BigDecimal("100.00");
+        Trade trade = new Trade(
+            "user123",
+            null, // timestamp will be set by service
+            null, // status will be set by service
+            new BigDecimal("100.00"),
+            "EUR",
+            null, // convertedAmount will be calculated
+            new BigDecimal("0.9217")
+        );
 
         given()
             .contentType(ContentType.JSON)
@@ -40,11 +44,15 @@ class TradeResourceTest {
 
     @Test
     void testExecuteTradeInvalidData() {
-        Trade trade = new Trade();
-        trade.userId = "user123";
-        trade.toCurrency = "EUR";
-        trade.exchangeRate = new BigDecimal("-1.0"); // Invalid negative rate
-        trade.usdAmount = new BigDecimal("100.00");
+        Trade trade = new Trade(
+            "user123",
+            null,
+            null,
+            new BigDecimal("100.00"),
+            "EUR",
+            null,
+            new BigDecimal("-1.0") // Invalid negative rate
+        );
 
         given()
             .contentType(ContentType.JSON)
@@ -69,11 +77,15 @@ class TradeResourceTest {
     @Test
     void testExecuteAndGetTrades() {
         // First, execute a trade
-        Trade trade = new Trade();
-        trade.userId = "testuser";
-        trade.toCurrency = "GBP";
-        trade.exchangeRate = new BigDecimal("0.7905");
-        trade.usdAmount = new BigDecimal("50.00");
+        Trade trade = new Trade(
+            "testuser",
+            null,
+            null,
+            new BigDecimal("50.00"),
+            "GBP",
+            null,
+            new BigDecimal("0.7905")
+        );
 
         given()
             .contentType(ContentType.JSON)
