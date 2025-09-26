@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @GrpcService
 public class ExchangeRateServiceImpl extends ExchangeRateServiceGrpc.ExchangeRateServiceImplBase {
@@ -22,19 +21,6 @@ public class ExchangeRateServiceImpl extends ExchangeRateServiceGrpc.ExchangeRat
     @Inject
     @ConfigProperty(name = "exchange-rates.fluctuation-factor", defaultValue = "0.02")
     double fluctuationFactor;
-
-    private static final Set<String> SUPPORTED_CURRENCIES = Set.of(
-        "AUD", "CAD", "CHF", "EUR", "GBP", "JPY"
-    );
-
-    private static final Map<String, BigDecimal> EXCHANGE_RATES = Map.of(
-        "AUD", BigDecimal.valueOf(1.5234),
-        "CAD", BigDecimal.valueOf(1.3425),
-        "CHF", BigDecimal.valueOf(0.9156),
-        "EUR", BigDecimal.valueOf(0.9217),
-        "GBP", BigDecimal.valueOf(0.7905),
-        "JPY", BigDecimal.valueOf(149.25)
-    );
 
     /**
      * Currency-specific seeds used in the rate fluctuation algorithm.
@@ -103,20 +89,20 @@ public class ExchangeRateServiceImpl extends ExchangeRateServiceGrpc.ExchangeRat
     }
 
     public List<ExchangeRateData> getAllCurrentRatesInternal() {
-        return SUPPORTED_CURRENCIES.stream()
+        return ExchangeRateData.SUPPORTED_CURRENCIES.stream()
             .map(currencyCode -> calculateRate(currencyCode, LocalDateTime.now()))
             .toList();
     }
 
     public ExchangeRateData getCurrentRateInternal(String currencyCode) {
-        if (!SUPPORTED_CURRENCIES.contains(currencyCode)) {
+        if (!ExchangeRateData.SUPPORTED_CURRENCIES.contains(currencyCode)) {
             return null;
         }
         return calculateRate(currencyCode, LocalDateTime.now());
     }
 
     private ExchangeRateData calculateRate(String currencyCode, LocalDateTime timestamp) {
-        BigDecimal baseRate = EXCHANGE_RATES.get(currencyCode);
+        BigDecimal baseRate = ExchangeRateData.EXCHANGE_RATES.get(currencyCode);
         if (baseRate == null) {
             throw new IllegalArgumentException("Unsupported currency: " + currencyCode);
         }
