@@ -3,6 +3,7 @@ package org.agoncal.application.currencyexchange.portfolio;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.agoncal.application.currencyexchange.portfolio.rates.ExchangeRate;
+import org.agoncal.application.currencyexchange.portfolio.trades.Trade;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -308,5 +309,150 @@ class PortfolioServiceTest {
                     "Masked card number should be 19 characters long for user: " + userId);
             }
         }
+    }
+
+    @Test
+    void shouldExecuteTradeSuccessfully() {
+        // Given - a valid trade
+        String userId = "john.doe@example.com";
+        BigDecimal usdAmount = BigDecimal.valueOf(100.0);
+        String toCurrency = "EUR";
+        BigDecimal exchangeRate = BigDecimal.valueOf(0.85);
+
+        Trade trade = new Trade(userId, usdAmount, toCurrency, exchangeRate);
+
+        // When - executing the trade
+        portfolioService.executeTrade(trade);
+
+        // Then - trade should be executed and stored
+        List<Trade> trades = portfolioService.getAllTrades(userId);
+        assertNotNull(trades);
+        assertFalse(trades.isEmpty());
+
+        // Verify the trade was added to the user's trade history
+        Trade executedTrade = trades.get(trades.size() - 1); // Get the last trade
+        assertEquals(userId, executedTrade.userId());
+        assertEquals(usdAmount, executedTrade.usdAmount());
+        assertEquals(toCurrency, executedTrade.toCurrency());
+        assertEquals(exchangeRate, executedTrade.exchangeRate());
+        assertNotNull(executedTrade.convertedAmount());
+        assertNotNull(executedTrade.timestamp());
+        assertNotNull(executedTrade.status());
+    }
+
+    @Test
+    void shouldExecuteMultipleTradesForSameUser() {
+        // Given - multiple trades for the same user
+        String userId = "jane.smith@example.com";
+
+        Trade trade1 = new Trade(userId, BigDecimal.valueOf(50.0), "GBP", BigDecimal.valueOf(0.80));
+        Trade trade2 = new Trade(userId, BigDecimal.valueOf(75.0), "EUR", BigDecimal.valueOf(0.85));
+        Trade trade3 = new Trade(userId, BigDecimal.valueOf(25.0), "JPY", BigDecimal.valueOf(150.0));
+
+        // When - executing multiple trades
+        portfolioService.executeTrade(trade1);
+        portfolioService.executeTrade(trade2);
+        portfolioService.executeTrade(trade3);
+
+        // Then - all trades should be stored
+        List<Trade> trades = portfolioService.getAllTrades(userId);
+        assertNotNull(trades);
+        assertTrue(trades.size() >= 3); // At least 3 trades for this user
+
+        // Verify all trades belong to the correct user
+        assertTrue(trades.stream().allMatch(t -> userId.equals(t.userId())));
+
+        // Verify all trades have valid data
+        assertTrue(trades.stream().allMatch(t -> t.usdAmount().compareTo(BigDecimal.ZERO) > 0));
+        assertTrue(trades.stream().allMatch(t -> t.exchangeRate().compareTo(BigDecimal.ZERO) > 0));
+        assertTrue(trades.stream().allMatch(t -> t.convertedAmount() != null));
+        assertTrue(trades.stream().allMatch(t -> t.timestamp() != null));
+        assertTrue(trades.stream().allMatch(t -> t.status() != null));
+    }
+
+    @Test
+    void shouldGetAllTradesForExistingUser() {
+        // Given - a user with existing trades
+        String userId = "bob.johnson@example.com";
+
+        // Execute a trade first to ensure there's at least one trade
+        Trade trade = new Trade(userId, BigDecimal.valueOf(200.0), "CHF", BigDecimal.valueOf(0.92));
+        portfolioService.executeTrade(trade);
+
+        // When - getting all trades for the user
+        List<Trade> trades = portfolioService.getAllTrades(userId);
+
+        // Then - trades should be returned
+        assertNotNull(trades);
+        assertFalse(trades.isEmpty());
+
+        // Verify all trades belong to the correct user
+        assertTrue(trades.stream().allMatch(t -> userId.equals(t.userId())));
+
+        // Verify trade data integrity
+        for (Trade t : trades) {
+            assertNotNull(t.userId());
+            assertNotNull(t.timestamp());
+            assertNotNull(t.status());
+            assertNotNull(t.usdAmount());
+            assertNotNull(t.toCurrency());
+            assertNotNull(t.exchangeRate());
+            assertTrue(t.usdAmount().compareTo(BigDecimal.ZERO) > 0);
+            assertTrue(t.exchangeRate().compareTo(BigDecimal.ZERO) > 0);
+        }
+    }
+
+    @Test
+    void shouldReturnEmptyListForUserWithNoTrades() {
+        // Given - a user with no trade history
+        String userId = "newuser@example.com";
+
+        // When - getting all trades for the user
+        List<Trade> trades = portfolioService.getAllTrades(userId);
+
+        // Then - empty list should be returned
+        assertNotNull(trades);
+        assertTrue(trades.isEmpty());
+    }
+
+    @Test
+    void shouldVerifyTradeStatusTypes() {
+        // Given - a user and a trade
+        String userId = "john.doe@example.com";
+        Trade trade = new Trade(userId, BigDecimal.valueOf(150.0), "AUD", BigDecimal.valueOf(1.50));
+
+        // When - executing multiple trades to get different statuses
+        for (int i = 0; i < 10; i++) {
+            Trade testTrade = new Trade(userId, BigDecimal.valueOf(10.0 + i), "CAD", BigDecimal.valueOf(1.35));
+            portfolioService.executeTrade(testTrade);
+        }
+
+        // Then - verify trade statuses are valid
+        List<Trade> trades = portfolioService.getAllTrades(userId);
+        assertNotNull(trades);
+        assertFalse(trades.isEmpty());
+
+        // Verify all trades have valid status values
+        for (Trade t : trades) {
+            assertTrue(t.status() == Trade.TradeStatus.PENDING ||
+                      t.status() == Trade.TradeStatus.COMPLETED ||
+                      t.status() == Trade.TradeStatus.FAILED,
+                      "Trade status should be one of the enum values");
+        }
+
+        // Verify trade statuses are distributed (based on TradeService random logic)
+        long completedTrades = trades.stream()
+            .mapToLong(t -> t.status() == Trade.TradeStatus.COMPLETED ? 1 : 0)
+            .sum();
+        long pendingTrades = trades.stream()
+            .mapToLong(t -> t.status() == Trade.TradeStatus.PENDING ? 1 : 0)
+            .sum();
+        long failedTrades = trades.stream()
+            .mapToLong(t -> t.status() == Trade.TradeStatus.FAILED ? 1 : 0)
+            .sum();
+
+        // Should have all trades accounted for
+        assertEquals(trades.size(), completedTrades + pendingTrades + failedTrades,
+            "All trades should have a valid status");
     }
 }
