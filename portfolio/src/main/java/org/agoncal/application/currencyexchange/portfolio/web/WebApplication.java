@@ -147,9 +147,12 @@ public class WebApplication extends Controller {
 
     private User findUserByEmail(String email) {
         return switch (email) {
-            case "john.doe@example.com" -> new User(1L, "John", "Doe", "john.doe@example.com");
-            case "jane.smith@example.com" -> new User(2L, "Jane", "Smith", "jane.smith@example.com");
-            case "bob.johnson@example.com" -> new User(3L, "Bob", "Johnson", "bob.johnson@example.com");
+            case "john.doe@example.com" -> new User(1L, "John", "Doe", "john.doe@example.com",
+                "4532123456781234", java.time.YearMonth.of(2026, 12), "VISA");
+            case "jane.smith@example.com" -> new User(2L, "Jane", "Smith", "jane.smith@example.com",
+                "5555123456789876", java.time.YearMonth.of(2025, 8), "MASTERCARD");
+            case "bob.johnson@example.com" -> new User(3L, "Bob", "Johnson", "bob.johnson@example.com",
+                "378282246310005", java.time.YearMonth.of(2027, 3), "AMEX");
             default -> null;
         };
     }

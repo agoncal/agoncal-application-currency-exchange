@@ -40,6 +40,11 @@ class PortfolioServiceTest {
         assertEquals("John", eurPortfolio.user().name());
         assertEquals("Doe", eurPortfolio.user().surname());
         assertEquals("john.doe@example.com", eurPortfolio.user().email());
+
+        // Verify credit card information
+        assertEquals("**** **** **** 1234", eurPortfolio.user().number());
+        assertEquals("VISA", eurPortfolio.user().type());
+        assertNotNull(eurPortfolio.user().expiryDate());
     }
 
     @Test
@@ -60,6 +65,11 @@ class PortfolioServiceTest {
         assertEquals("Jane", anyPortfolio.user().name());
         assertEquals("Smith", anyPortfolio.user().surname());
         assertEquals("jane.smith@example.com", anyPortfolio.user().email());
+
+        // Verify Jane's credit card information
+        assertEquals("**** **** **** 9876", anyPortfolio.user().number());
+        assertEquals("MASTERCARD", anyPortfolio.user().type());
+        assertNotNull(anyPortfolio.user().expiryDate());
 
         // Check specific EUR portfolio
         Portfolio eurPortfolio = portfolios.stream()
@@ -87,6 +97,11 @@ class PortfolioServiceTest {
         assertEquals("Bob", anyPortfolio.user().name());
         assertEquals("Johnson", anyPortfolio.user().surname());
         assertEquals("bob.johnson@example.com", anyPortfolio.user().email());
+
+        // Verify Bob's credit card information
+        assertEquals("**** **** **** 0005", anyPortfolio.user().number());
+        assertEquals("AMEX", anyPortfolio.user().type());
+        assertNotNull(anyPortfolio.user().expiryDate());
 
         // Check specific EUR portfolio
         Portfolio eurPortfolio = portfolios.stream()
@@ -215,6 +230,10 @@ class PortfolioServiceTest {
         // Verify all portfolios have non-null timestamps
         assertTrue(portfolios.stream()
             .allMatch(p -> p.lastUpdated() != null));
+
+        // Verify all portfolios have users with credit card information
+        assertTrue(portfolios.stream()
+            .allMatch(p -> p.user().number() != null && p.user().type() != null && p.user().expiryDate() != null));
     }
 
     @Test
@@ -240,5 +259,54 @@ class PortfolioServiceTest {
         assertTrue(portfolioIds.contains(5L)); // CHF portfolio
         assertTrue(portfolioIds.contains(6L)); // CAD portfolio
         assertTrue(portfolioIds.contains(7L)); // AUD portfolio
+    }
+
+    @Test
+    void shouldVerifyCreditCardInformation() {
+        // Test John Doe's credit card
+        List<Portfolio> johnPortfolios = portfolioService.getUserPortfolio("john.doe@example.com");
+        Portfolio johnPortfolio = johnPortfolios.get(0);
+
+        assertEquals("**** **** **** 1234", johnPortfolio.user().number());
+        assertEquals("VISA", johnPortfolio.user().type());
+        assertNotNull(johnPortfolio.user().expiryDate());
+
+        // Test Jane Smith's credit card
+        List<Portfolio> janePortfolios = portfolioService.getUserPortfolio("jane.smith@example.com");
+        Portfolio janePortfolio = janePortfolios.get(0);
+
+        assertEquals("**** **** **** 9876", janePortfolio.user().number());
+        assertEquals("MASTERCARD", janePortfolio.user().type());
+        assertNotNull(janePortfolio.user().expiryDate());
+
+        // Test Bob Johnson's credit card
+        List<Portfolio> bobPortfolios = portfolioService.getUserPortfolio("bob.johnson@example.com");
+        Portfolio bobPortfolio = bobPortfolios.get(0);
+
+        assertEquals("**** **** **** 0005", bobPortfolio.user().number());
+        assertEquals("AMEX", bobPortfolio.user().type());
+        assertNotNull(bobPortfolio.user().expiryDate());
+    }
+
+    @Test
+    void shouldVerifyCreditCardMasking() {
+        // Verify that all users have masked credit card numbers
+        String[] userIds = {"john.doe@example.com", "jane.smith@example.com", "bob.johnson@example.com"};
+
+        for (String userId : userIds) {
+            List<Portfolio> portfolios = portfolioService.getUserPortfolio(userId);
+            if (!portfolios.isEmpty()) {
+                Portfolio portfolio = portfolios.get(0);
+                String cardNumber = portfolio.user().number();
+
+                // Verify the card number is masked (starts with **** and has 4 digits at the end)
+                assertTrue(cardNumber.startsWith("**** **** ****"),
+                    "Card number should be masked for user: " + userId);
+                assertTrue(cardNumber.matches(".*\\d{4}$"),
+                    "Card number should end with 4 digits for user: " + userId);
+                assertEquals(19, cardNumber.length(),
+                    "Masked card number should be 19 characters long for user: " + userId);
+            }
+        }
     }
 }
