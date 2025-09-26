@@ -11,7 +11,6 @@ import org.agoncal.application.currencyexchange.portfolio.Portfolio;
 import org.agoncal.application.currencyexchange.portfolio.PortfolioService;
 import org.agoncal.application.currencyexchange.portfolio.User;
 import org.agoncal.application.currencyexchange.portfolio.rates.ExchangeRate;
-import org.agoncal.application.currencyexchange.portfolio.rates.RatesService;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestForm;
 

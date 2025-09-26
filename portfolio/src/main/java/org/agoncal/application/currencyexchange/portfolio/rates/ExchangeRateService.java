@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @ApplicationScoped
-public class RatesService {
+public class ExchangeRateService {
 
     double fluctuationFactor = 0.2d;
 
@@ -41,11 +41,15 @@ public class RatesService {
 
     public List<ExchangeRate> getAllCurrentRates() {
         return Stream.of("AUD", "CAD", "CHF", "EUR", "GBP", "JPY")
-            .map(currency -> calculateRate(currency, LocalDateTime.now()))
+            .map(currency -> calculateRate(currency))
             .toList();
     }
 
-    private ExchangeRate calculateRate(String currencyCode, LocalDateTime timestamp) {
+    public ExchangeRate getCurrentRate(String currencyCode) {
+        return calculateRate(currencyCode);
+    }
+
+    private ExchangeRate calculateRate(String currencyCode) {
         BigDecimal baseRate = BASE_RATES.get(currencyCode);
         if (baseRate == null) {
             throw new IllegalArgumentException("Unsupported currency: " + currencyCode);
@@ -64,6 +68,6 @@ public class RatesService {
             rate = rate.setScale(2, RoundingMode.HALF_UP);
         }
 
-        return new ExchangeRate(currencyCode, rate, timestamp);
+        return new ExchangeRate(currencyCode, rate, LocalDateTime.now());
     }
 }
