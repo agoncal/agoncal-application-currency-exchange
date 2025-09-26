@@ -1,6 +1,5 @@
 package org.agoncal.application.currencyexchange.trades;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 
@@ -12,15 +11,21 @@ public record Trade(
     @NotBlank
     String userId,
     LocalDateTime timestamp,
-    TradeStatus status,     // PENDING, COMPLETED, FAILED
+    TradeStatus status,
     @DecimalMin("0")
-    BigDecimal usdAmount,   // Original USD amount
+    BigDecimal usdAmount,
     @NotBlank
-    String toCurrency,      // Target currency
-    BigDecimal convertedAmount,  // Amount received in target currency
+    String toCurrency,
+    BigDecimal convertedAmount,
     @DecimalMin("0")
-    BigDecimal exchangeRate     // Rate used for conversion
+    BigDecimal exchangeRate
 ) {
+
+    public enum TradeStatus {
+        PENDING,
+        COMPLETED,
+        FAILED
+    }
 
     // Constructor for creating new trades (before execution)
     public Trade(String userId, BigDecimal usdAmount, String toCurrency, BigDecimal exchangeRate) {

@@ -44,15 +44,15 @@ public class TradeService {
     }
 
     // Randomly assign status (mostly COMPLETED, but some FAILED with lower weight)
-    private TradeStatus getTradeStatus() {
+    private Trade.TradeStatus getTradeStatus() {
         double statusRandom = random.nextDouble();
-        TradeStatus status;
+        Trade.TradeStatus status;
         if (statusRandom < 0.85) {
-            status = TradeStatus.COMPLETED;
+            status = Trade.TradeStatus.COMPLETED;
         } else if (statusRandom < 0.95) {
-            status = TradeStatus.PENDING;
+            status = Trade.TradeStatus.PENDING;
         } else {
-            status = TradeStatus.FAILED;
+            status = Trade.TradeStatus.FAILED;
         }
         return status;
     }
