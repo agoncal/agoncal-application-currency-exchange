@@ -18,7 +18,6 @@ public class ExchangeRateServiceImpl extends ExchangeRateServiceGrpc.ExchangeRat
 
     private static final Logger LOG = Logger.getLogger(ExchangeRateServiceImpl.class);
 
-    @Inject
     @ConfigProperty(name = "exchange-rates.fluctuation-factor", defaultValue = "0.02")
     double fluctuationFactor;
 
@@ -88,13 +87,13 @@ public class ExchangeRateServiceImpl extends ExchangeRateServiceGrpc.ExchangeRat
         }
     }
 
-    public List<ExchangeRateData> getAllCurrentRatesInternal() {
+    private List<ExchangeRateData> getAllCurrentRatesInternal() {
         return ExchangeRateData.SUPPORTED_CURRENCIES.stream()
             .map(currencyCode -> calculateRate(currencyCode, LocalDateTime.now()))
             .toList();
     }
 
-    public ExchangeRateData getCurrentRateInternal(String currencyCode) {
+    private ExchangeRateData getCurrentRateInternal(String currencyCode) {
         if (!ExchangeRateData.SUPPORTED_CURRENCIES.contains(currencyCode)) {
             return null;
         }
@@ -123,11 +122,11 @@ public class ExchangeRateServiceImpl extends ExchangeRateServiceGrpc.ExchangeRat
         return new ExchangeRateData(currencyCode, rate, timestamp);
     }
 
-    private ExchangeRate convertToGrpcExchangeRate(ExchangeRateData javaRate) {
+    private ExchangeRate convertToGrpcExchangeRate(ExchangeRateData rate) {
         return ExchangeRate.newBuilder()
-            .setCurrency(javaRate.currency())
-            .setRate(javaRate.rate().doubleValue())
-            .setTimestamp(javaRate.timestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+            .setCurrency(rate.currency())
+            .setRate(rate.rate().doubleValue())
+            .setTimestamp(rate.timestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
             .build();
     }
 }
