@@ -2,17 +2,16 @@ package org.agoncal.application.currencyexchange.portfolio;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.validation.constraints.NotBlank;
+import static org.agoncal.application.currencyexchange.portfolio.User.USER_PORTFOLIOS;
 import org.agoncal.application.currencyexchange.portfolio.rates.ExchangeRate;
 import org.agoncal.application.currencyexchange.portfolio.rates.ExchangeRateService;
 import org.agoncal.application.currencyexchange.portfolio.trades.Trade;
 import org.agoncal.application.currencyexchange.portfolio.trades.TradeService;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.math.RoundingMode;
+import java.util.Comparator;
 import java.util.List;
-
-import static org.agoncal.application.currencyexchange.portfolio.User.USER_PORTFOLIOS;
 
 @ApplicationScoped
 public class PortfolioService {
@@ -24,7 +23,10 @@ public class PortfolioService {
     TradeService tradeService;
 
     public List<Portfolio> getUserPortfolio(String userId) {
-        return USER_PORTFOLIOS.getOrDefault(userId, List.of());
+        return USER_PORTFOLIOS.getOrDefault(userId, List.of())
+            .stream()
+            .sorted(Comparator.comparing(Portfolio::currency))
+            .toList();
     }
 
     public List<ExchangeRate> getAllCurrentRates() {
@@ -37,9 +39,43 @@ public class PortfolioService {
 
     public void executeTrade(Trade trade) {
         tradeService.executeTrade(trade);
+        updateUserPortfolio(trade);
     }
 
     public List<Trade> getAllTrades(String userId) {
         return tradeService.getAllTrades(userId);
+    }
+
+    private static void updateUserPortfolio(Trade trade) {
+        // Update user portfolio balance for the target currency
+        List<Portfolio> userPortfolios = USER_PORTFOLIOS.get(trade.userId());
+        if (userPortfolios != null) {
+            // Calculate converted amount
+            BigDecimal convertedAmount = trade.usdAmount().multiply(trade.exchangeRate());
+
+            // Find the portfolio entry for the target currency
+            Portfolio targetPortfolio = userPortfolios.stream()
+                .filter(p -> p.currency().equals(trade.toCurrency()))
+                .findFirst()
+                .orElse(null);
+
+            if (targetPortfolio != null) {
+                // Update the balance by adding the converted amount (rounded to 1 decimal)
+                BigDecimal newBalance = targetPortfolio.balance()
+                    .add(convertedAmount)
+                    .setScale(1, RoundingMode.HALF_UP);
+                Portfolio updatedPortfolio = new Portfolio(
+                    targetPortfolio.id(),
+                    targetPortfolio.user(),
+                    targetPortfolio.currency(),
+                    newBalance,
+                    java.time.LocalDateTime.now()
+                );
+
+                // Replace the old portfolio entry with the updated one
+                userPortfolios.remove(targetPortfolio);
+                userPortfolios.add(updatedPortfolio);
+            }
+        }
     }
 }
