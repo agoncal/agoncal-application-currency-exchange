@@ -14,7 +14,7 @@ import java.util.List;
 @Path("/api/trades")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RegisterRestClient
+@RegisterRestClient(configKey = "trades")
 public interface TradeService {
 
     @POST
