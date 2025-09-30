@@ -1,10 +1,15 @@
 package org.agoncal.application.currencyexchange.portfolio;
 
+import io.quarkus.grpc.GrpcClient;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import static org.agoncal.application.currencyexchange.portfolio.User.USER_PORTFOLIOS;
-import org.agoncal.application.currencyexchange.portfolio.currency.ExchangeRate;
-import org.agoncal.application.currencyexchange.portfolio.currency.ExchangeRateService;
+
+import org.agoncal.application.currencyexchange.currency.CurrencyRequest;
+import org.agoncal.application.currencyexchange.currency.Empty;
+import org.agoncal.application.currencyexchange.currency.ExchangeRateServiceGrpc;
+import org.agoncal.application.currencyexchange.currency.ExchangeRate;
 import org.agoncal.application.currencyexchange.portfolio.trade.Trade;
 import org.agoncal.application.currencyexchange.portfolio.trade.TradeService;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -17,8 +22,8 @@ import java.util.List;
 @ApplicationScoped
 public class PortfolioService {
 
-    @Inject
-    ExchangeRateService exchangeRateService;
+    @GrpcClient
+    ExchangeRateServiceGrpc.ExchangeRateServiceBlockingStub exchangeRateService;
 
     @RestClient
     TradeService tradeService;
@@ -31,11 +36,11 @@ public class PortfolioService {
     }
 
     public List<ExchangeRate> getAllCurrentRates() {
-        return exchangeRateService.getAllCurrentRates();
+        return exchangeRateService.getAllCurrentRates(Empty.newBuilder().build()).getRatesList();
     }
 
     public ExchangeRate getCurrentRate(String currencyCode) {
-        return exchangeRateService.getCurrentRate(currencyCode);
+        return exchangeRateService.getCurrentRate(CurrencyRequest.newBuilder().setCurrencyCode(currencyCode).build()).getRate();
     }
 
     public void executeTrade(Trade trade) {

@@ -10,7 +10,7 @@ import jakarta.ws.rs.Path;
 import org.agoncal.application.currencyexchange.portfolio.Portfolio;
 import org.agoncal.application.currencyexchange.portfolio.PortfolioService;
 import org.agoncal.application.currencyexchange.portfolio.User;
-import org.agoncal.application.currencyexchange.portfolio.currency.ExchangeRate;
+import org.agoncal.application.currencyexchange.currency.ExchangeRate;
 import org.agoncal.application.currencyexchange.portfolio.trade.Trade;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestForm;
@@ -166,7 +166,7 @@ public class WebApplication extends Controller {
             ExchangeRate exchangeRate = portfolioService.getCurrentRate(toCurrency);
 
             // Create and execute trade
-            Trade trade = new Trade(currentUser.email(), usdAmount, toCurrency, exchangeRate.rate());
+            Trade trade = new Trade(currentUser.email(), usdAmount, toCurrency, exchangeRate.getRate());
             portfolioService.executeTrade(trade);
 
             LOG.info("Trade executed successfully for user: " + currentUser.email() +

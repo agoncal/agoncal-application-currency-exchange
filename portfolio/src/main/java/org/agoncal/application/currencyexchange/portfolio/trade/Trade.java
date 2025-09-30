@@ -21,5 +21,9 @@ public record Trade(
     public Trade(String userId, BigDecimal usdAmount, String toCurrency, BigDecimal convertedAmount, BigDecimal exchangeRate) {
         this(userId, LocalDateTime.now(), usdAmount, toCurrency, convertedAmount, exchangeRate);
     }
+
+    public Trade(String email, BigDecimal usdAmount, String toCurrency, double rate) {
+        this(email, LocalDateTime.now(), usdAmount, toCurrency, null, BigDecimal.valueOf(rate));
+    }
 }
 
