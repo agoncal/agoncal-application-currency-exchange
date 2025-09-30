@@ -21,7 +21,7 @@ import java.util.List;
 @ApplicationScoped
 public class PortfolioService {
 
-    @GrpcClient
+    @GrpcClient("currency")
     ExchangeRateServiceGrpc.ExchangeRateServiceBlockingStub exchangeRateService;
 
     @RestClient
