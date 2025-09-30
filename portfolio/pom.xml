@@ -85,6 +85,11 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-web-dependency-locator</artifactId>
         </dependency>
+        <!-- Docker -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-container-image-docker</artifactId>
+        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>io.quarkus</groupId>
