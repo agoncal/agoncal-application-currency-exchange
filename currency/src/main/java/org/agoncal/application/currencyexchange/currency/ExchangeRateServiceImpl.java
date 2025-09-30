@@ -2,7 +2,6 @@ package org.agoncal.application.currencyexchange.currency;
 
 import io.grpc.stub.StreamObserver;
 import io.quarkus.grpc.GrpcService;
-import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
@@ -124,7 +123,7 @@ public class ExchangeRateServiceImpl extends ExchangeRateServiceGrpc.ExchangeRat
 
     private ExchangeRate convertToGrpcExchangeRate(ExchangeRateData rate) {
         return ExchangeRate.newBuilder()
-            .setCurrency(rate.currency())
+            .setCurrencyCode(rate.currencyCode())
             .setRate(rate.rate().doubleValue())
             .setTimestamp(rate.timestamp().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
             .build();

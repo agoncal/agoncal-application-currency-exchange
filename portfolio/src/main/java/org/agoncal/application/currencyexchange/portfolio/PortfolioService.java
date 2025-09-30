@@ -2,7 +2,6 @@ package org.agoncal.application.currencyexchange.portfolio;
 
 import io.quarkus.grpc.GrpcClient;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 import static org.agoncal.application.currencyexchange.portfolio.User.USER_PORTFOLIOS;
 

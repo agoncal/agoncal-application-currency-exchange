@@ -75,7 +75,7 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="balance-amount text-warning d-flex align-items-center">
-                                        {#switch exchangeRate.currency}
+                                        {#switch exchangeRate.currencyCode}
                                             {#case 'EUR'}
                                                 <i class="bi bi-currency-euro me-2"></i>
                                             {#case 'GBP'}
@@ -137,8 +137,8 @@
                                         <select class="form-select" id="toCurrency" name="toCurrency" required>
                                             <option value="">Select Currency</option>
                                             {#for exchangeRate in exchangeRates}
-                                                <option value="{exchangeRate.currency}">
-                                                    {exchangeRate.currency}
+                                                <option value="{exchangeRate.currencyCode}">
+                                                    {exchangeRate.currencyCode}
                                                 </option>
                                             {/for}
                                         </select>

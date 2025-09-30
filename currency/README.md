@@ -1,5 +1,10 @@
 # Exchange Rate Microservice
 
+grpcurl --plaintext localhost:8082 list
+grpcurl --plaintext localhost:8082 describe exchangerates.ExchangeRateService
+grpcurl --plaintext localhost:8082 exchangerates.ExchangeRateService/GetAllCurrentRates
+grpcurl --plaintext -d '{"currency_code": "AUD"}' localhost:8082 exchangerates.ExchangeRateService/GetCurrentRate
+
 ## Specification
 
 ### Overview
@@ -14,7 +19,7 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "org.agoncal.application.currencyexchange.currency";
+option java_package = "org.agoncal.application.currencyexchange.currencyCode";
 option java_outer_classname = "ExchangeRateServiceProto";
 
 package exchangerates;

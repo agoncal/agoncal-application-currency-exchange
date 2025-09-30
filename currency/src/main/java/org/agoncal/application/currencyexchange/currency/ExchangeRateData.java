@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 public record ExchangeRateData(
-    String currency,         // Target currency code (EUR, GBP, JPY, etc.)
+    String currencyCode,     // Target currencyCode code (EUR, GBP, JPY, etc.)
     BigDecimal rate,         // Exchange rate (1 USD = 0.9217 EUR)
     LocalDateTime timestamp  // When the rate was calculated
 ) {

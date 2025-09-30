@@ -31,24 +31,24 @@ class ExchangeRateServiceTest {
 
         // Verify all expected currencies are present
         boolean hasEUR = response.getRatesList().stream()
-                .anyMatch(rate -> "EUR".equals(rate.getCurrency()));
+                .anyMatch(rate -> "EUR".equals(rate.getCurrencyCode()));
         boolean hasGBP = response.getRatesList().stream()
-                .anyMatch(rate -> "GBP".equals(rate.getCurrency()));
+                .anyMatch(rate -> "GBP".equals(rate.getCurrencyCode()));
         boolean hasJPY = response.getRatesList().stream()
-                .anyMatch(rate -> "JPY".equals(rate.getCurrency()));
+                .anyMatch(rate -> "JPY".equals(rate.getCurrencyCode()));
         boolean hasCHF = response.getRatesList().stream()
-                .anyMatch(rate -> "CHF".equals(rate.getCurrency()));
+                .anyMatch(rate -> "CHF".equals(rate.getCurrencyCode()));
         boolean hasCAD = response.getRatesList().stream()
-                .anyMatch(rate -> "CAD".equals(rate.getCurrency()));
+                .anyMatch(rate -> "CAD".equals(rate.getCurrencyCode()));
         boolean hasAUD = response.getRatesList().stream()
-                .anyMatch(rate -> "AUD".equals(rate.getCurrency()));
+                .anyMatch(rate -> "AUD".equals(rate.getCurrencyCode()));
 
         assertTrue(hasEUR && hasGBP && hasJPY && hasCHF && hasCAD && hasAUD);
 
         // Verify each rate has required fields
         for (ExchangeRate rate : response.getRatesList()) {
-            assertNotNull(rate.getCurrency());
-            assertFalse(rate.getCurrency().isEmpty());
+            assertNotNull(rate.getCurrencyCode());
+            assertFalse(rate.getCurrencyCode().isEmpty());
             assertTrue(rate.getRate() > 0);
             assertNotNull(rate.getTimestamp());
         }
@@ -71,7 +71,7 @@ class ExchangeRateServiceTest {
         assertNotNull(response.getRate());
 
         ExchangeRate rate = response.getRate();
-        assertEquals("EUR", rate.getCurrency());
+        assertEquals("EUR", rate.getCurrencyCode());
         assertTrue(rate.getRate() > 0);
         assertNotNull(rate.getTimestamp());
     }
@@ -93,7 +93,7 @@ class ExchangeRateServiceTest {
         assertNotNull(response.getRate());
 
         ExchangeRate rate = response.getRate();
-        assertEquals("GBP", rate.getCurrency());
+        assertEquals("GBP", rate.getCurrencyCode());
         assertTrue(rate.getRate() > 0);
         assertNotNull(rate.getTimestamp());
     }
@@ -115,7 +115,7 @@ class ExchangeRateServiceTest {
         assertNotNull(response.getRate());
 
         ExchangeRate rate = response.getRate();
-        assertEquals("JPY", rate.getCurrency());
+        assertEquals("JPY", rate.getCurrencyCode());
         assertTrue(rate.getRate() > 0);
         assertNotNull(rate.getTimestamp());
     }
