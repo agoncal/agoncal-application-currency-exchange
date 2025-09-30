@@ -1,10 +1,9 @@
-package org.agoncal.application.currencyexchange.rates;
+package org.agoncal.application.currencyexchange.currency;
 
 import io.quarkus.grpc.GrpcClient;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 

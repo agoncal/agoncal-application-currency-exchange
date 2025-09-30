@@ -1,4 +1,4 @@
-package org.agoncal.application.currencyexchange.rates;
+package org.agoncal.application.currencyexchange.currency;
 
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 

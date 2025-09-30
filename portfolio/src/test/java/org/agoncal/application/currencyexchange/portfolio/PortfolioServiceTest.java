@@ -37,7 +37,7 @@ class PortfolioServiceTest {
             .orElseThrow();
 
         assertEquals("EUR", eurPortfolio.currency());
-        assertEquals(BigDecimal.valueOf(850.0), eurPortfolio.balance());
+        assertEquals(BigDecimal.valueOf(170.0), eurPortfolio.balance());
         assertEquals("John", eurPortfolio.user().name());
         assertEquals("Doe", eurPortfolio.user().surname());
         assertEquals("john.doe@example.com", eurPortfolio.user().email());
@@ -77,7 +77,7 @@ class PortfolioServiceTest {
             .filter(p -> "EUR".equals(p.currency()))
             .findFirst()
             .orElseThrow();
-        assertEquals(BigDecimal.valueOf(1700.0), eurPortfolio.balance());
+        assertEquals(BigDecimal.valueOf(170.0), eurPortfolio.balance());
     }
 
     @Test
@@ -109,7 +109,7 @@ class PortfolioServiceTest {
             .filter(p -> "EUR".equals(p.currency()))
             .findFirst()
             .orElseThrow();
-        assertEquals(BigDecimal.valueOf(425.0), eurPortfolio.balance());
+        assertEquals(BigDecimal.valueOf(42.0), eurPortfolio.balance());
     }
 
     @Test

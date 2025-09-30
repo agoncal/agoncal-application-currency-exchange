@@ -14,7 +14,7 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "org.agoncal.application.currencyexchange.rates";
+option java_package = "org.agoncal.application.currencyexchange.currency";
 option java_outer_classname = "ExchangeRateServiceProto";
 
 package exchangerates;

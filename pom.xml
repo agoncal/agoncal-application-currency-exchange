@@ -9,8 +9,8 @@
     <name>Currency Exchange</name>
 
     <modules>
+        <module>currency</module>
         <module>portfolio</module>
-        <module>rates</module>
         <module>trades</module>
     </modules>
 </project>
