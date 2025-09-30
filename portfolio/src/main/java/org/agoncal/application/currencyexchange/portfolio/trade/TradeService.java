@@ -1,31 +1,27 @@
 package org.agoncal.application.currencyexchange.portfolio.trade;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-@ApplicationScoped
-public class TradeService {
+@Path("/api/trades")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+@RegisterRestClient
+public interface TradeService {
 
-    private final Map<String, List<Trade>> tradeHistory = new HashMap<>();
+    @POST
+    void executeTrade(Trade trade);
 
-    public void executeTrade(Trade trade) {
-        // Calculate converted amount
-        BigDecimal convertedAmount = trade.usdAmount().multiply(trade.exchangeRate());
-
-        // Create new trade with converted amount
-        Trade executedTrade = new Trade(trade.userId(), trade.usdAmount(), trade.toCurrency(), convertedAmount, trade.exchangeRate());
-
-        // Store trade in history
-        tradeHistory.computeIfAbsent(trade.userId(), k -> new ArrayList<>()).add(executedTrade);
-    }
-
-    public List<Trade> getAllTrades(@NotBlank String userId) {
-        return tradeHistory.getOrDefault(userId, new ArrayList<>());
-    }
+    @GET
+    @Path("/{userId}")
+    List<Trade> getAllTrades(@PathParam("userId") String userId);
 }

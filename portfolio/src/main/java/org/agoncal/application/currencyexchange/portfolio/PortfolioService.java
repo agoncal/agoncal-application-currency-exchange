@@ -7,6 +7,7 @@ import org.agoncal.application.currencyexchange.portfolio.currency.ExchangeRate;
 import org.agoncal.application.currencyexchange.portfolio.currency.ExchangeRateService;
 import org.agoncal.application.currencyexchange.portfolio.trade.Trade;
 import org.agoncal.application.currencyexchange.portfolio.trade.TradeService;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,7 +20,7 @@ public class PortfolioService {
     @Inject
     ExchangeRateService exchangeRateService;
 
-    @Inject
+    @RestClient
     TradeService tradeService;
 
     public List<Portfolio> getUserPortfolio(String userId) {

@@ -5,6 +5,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
+
 @Path("/api/trades")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -20,7 +22,7 @@ public class TradeResource {
 
     @GET
     @Path("/{userId}")
-    public Response getAllTrades(@PathParam("userId") String userId) {
-        return Response.ok(tradeService.getAllTrades(userId)).build();
+    public List<Trade> getAllTrades(@PathParam("userId") String userId) {
+        return tradeService.getAllTrades(userId);
     }
 }
