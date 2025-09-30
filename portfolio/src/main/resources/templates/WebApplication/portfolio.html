@@ -192,7 +192,6 @@
                                             <th>Target Currency</th>
                                             <th class="text-end">Exchange Rate</th>
                                             <th class="text-end">Converted Amount</th>
-                                            <th class="text-center">Status</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -216,22 +215,6 @@
                                                     {#else}
                                                         <span class="text-muted">-</span>
                                                     {/if}
-                                                </td>
-                                                <td class="text-center">
-                                                    {#switch trade.status.name()}
-                                                        {#case 'COMPLETED'}
-                                                            <span class="badge bg-success">
-                                                                <i class="bi bi-check-circle me-1"></i>Completed
-                                                            </span>
-                                                        {#case 'PENDING'}
-                                                            <span class="badge bg-warning">
-                                                                <i class="bi bi-clock me-1"></i>Pending
-                                                            </span>
-                                                        {#case 'FAILED'}
-                                                            <span class="badge bg-danger">
-                                                                <i class="bi bi-x-circle me-1"></i>Failed
-                                                            </span>
-                                                    {/switch}
                                                 </td>
                                             </tr>
                                         {/for}

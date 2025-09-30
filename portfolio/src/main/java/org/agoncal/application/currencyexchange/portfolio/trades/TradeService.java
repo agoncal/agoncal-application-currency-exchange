@@ -20,7 +20,7 @@ public class TradeService {
         BigDecimal convertedAmount = trade.usdAmount().multiply(trade.exchangeRate());
 
         // Create new trade with converted amount
-        Trade executedTrade = new Trade(trade.userId(), Trade.TradeStatus.PENDING, trade.usdAmount(), trade.toCurrency(), convertedAmount, trade.exchangeRate());
+        Trade executedTrade = new Trade(trade.userId(), trade.usdAmount(), trade.toCurrency(), convertedAmount, trade.exchangeRate());
 
         // Store trade in history
         tradeHistory.computeIfAbsent(trade.userId(), k -> new ArrayList<>()).add(executedTrade);

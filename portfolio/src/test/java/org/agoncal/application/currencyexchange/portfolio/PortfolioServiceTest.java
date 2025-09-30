@@ -337,7 +337,6 @@ class PortfolioServiceTest {
         assertEquals(exchangeRate, executedTrade.exchangeRate());
         assertNotNull(executedTrade.convertedAmount());
         assertNotNull(executedTrade.timestamp());
-        assertNotNull(executedTrade.status());
     }
 
     @Test
@@ -367,7 +366,6 @@ class PortfolioServiceTest {
         assertTrue(trades.stream().allMatch(t -> t.exchangeRate().compareTo(BigDecimal.ZERO) > 0));
         assertTrue(trades.stream().allMatch(t -> t.convertedAmount() != null));
         assertTrue(trades.stream().allMatch(t -> t.timestamp() != null));
-        assertTrue(trades.stream().allMatch(t -> t.status() != null));
     }
 
     @Test
@@ -393,7 +391,6 @@ class PortfolioServiceTest {
         for (Trade t : trades) {
             assertNotNull(t.userId());
             assertNotNull(t.timestamp());
-            assertNotNull(t.status());
             assertNotNull(t.usdAmount());
             assertNotNull(t.toCurrency());
             assertNotNull(t.exchangeRate());
@@ -416,43 +413,30 @@ class PortfolioServiceTest {
     }
 
     @Test
-    void shouldVerifyTradeStatusTypes() {
-        // Given - a user and a trade
+    void shouldVerifyTradeAmounts() {
+        // Given - a user and multiple trades
         String userId = "john.doe@example.com";
-        Trade trade = new Trade(userId, BigDecimal.valueOf(150.0), "AUD", BigDecimal.valueOf(1.50));
 
-        // When - executing multiple trades to get different statuses
+        // When - executing multiple trades
         for (int i = 0; i < 10; i++) {
             Trade testTrade = new Trade(userId, BigDecimal.valueOf(10.0 + i), "CAD", BigDecimal.valueOf(1.35));
             portfolioService.executeTrade(testTrade);
         }
 
-        // Then - verify trade statuses are valid
+        // Then - verify all trades have valid amounts
         List<Trade> trades = portfolioService.getAllTrades(userId);
         assertNotNull(trades);
         assertFalse(trades.isEmpty());
 
-        // Verify all trades have valid status values
+        // Verify all trades have positive amounts
         for (Trade t : trades) {
-            assertTrue(t.status() == Trade.TradeStatus.PENDING ||
-                      t.status() == Trade.TradeStatus.COMPLETED ||
-                      t.status() == Trade.TradeStatus.FAILED,
-                      "Trade status should be one of the enum values");
+            assertTrue(t.usdAmount().compareTo(BigDecimal.ZERO) > 0,
+                      "USD amount should be positive");
+            assertTrue(t.exchangeRate().compareTo(BigDecimal.ZERO) > 0,
+                      "Exchange rate should be positive");
+            assertNotNull(t.convertedAmount(), "Converted amount should not be null");
+            assertTrue(t.convertedAmount().compareTo(BigDecimal.ZERO) > 0,
+                      "Converted amount should be positive");
         }
-
-        // Verify trade statuses are distributed (based on TradeService random logic)
-        long completedTrades = trades.stream()
-            .mapToLong(t -> t.status() == Trade.TradeStatus.COMPLETED ? 1 : 0)
-            .sum();
-        long pendingTrades = trades.stream()
-            .mapToLong(t -> t.status() == Trade.TradeStatus.PENDING ? 1 : 0)
-            .sum();
-        long failedTrades = trades.stream()
-            .mapToLong(t -> t.status() == Trade.TradeStatus.FAILED ? 1 : 0)
-            .sum();
-
-        // Should have all trades accounted for
-        assertEquals(trades.size(), completedTrades + pendingTrades + failedTrades,
-            "All trades should have a valid status");
     }
 }
