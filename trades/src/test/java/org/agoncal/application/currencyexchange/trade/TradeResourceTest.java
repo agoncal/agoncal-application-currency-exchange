@@ -1,4 +1,4 @@
-package org.agoncal.application.currencyexchange.trades;
+package org.agoncal.application.currencyexchange.trade;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;

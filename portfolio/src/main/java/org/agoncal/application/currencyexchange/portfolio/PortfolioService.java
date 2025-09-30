@@ -3,10 +3,10 @@ package org.agoncal.application.currencyexchange.portfolio;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import static org.agoncal.application.currencyexchange.portfolio.User.USER_PORTFOLIOS;
-import org.agoncal.application.currencyexchange.portfolio.rates.ExchangeRate;
-import org.agoncal.application.currencyexchange.portfolio.rates.ExchangeRateService;
-import org.agoncal.application.currencyexchange.portfolio.trades.Trade;
-import org.agoncal.application.currencyexchange.portfolio.trades.TradeService;
+import org.agoncal.application.currencyexchange.portfolio.currency.ExchangeRate;
+import org.agoncal.application.currencyexchange.portfolio.currency.ExchangeRateService;
+import org.agoncal.application.currencyexchange.portfolio.trade.Trade;
+import org.agoncal.application.currencyexchange.portfolio.trade.TradeService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

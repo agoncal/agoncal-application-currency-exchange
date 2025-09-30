@@ -1,4 +1,4 @@
-package org.agoncal.application.currencyexchange.portfolio.rates;
+package org.agoncal.application.currencyexchange.portfolio.currency;
 
 import jakarta.enterprise.context.ApplicationScoped;
 

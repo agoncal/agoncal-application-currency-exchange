@@ -1,4 +1,4 @@
-package org.agoncal.application.currencyexchange.trades;
+package org.agoncal.application.currencyexchange.trade;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.validation.Valid;

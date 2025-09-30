@@ -10,8 +10,8 @@ import jakarta.ws.rs.Path;
 import org.agoncal.application.currencyexchange.portfolio.Portfolio;
 import org.agoncal.application.currencyexchange.portfolio.PortfolioService;
 import org.agoncal.application.currencyexchange.portfolio.User;
-import org.agoncal.application.currencyexchange.portfolio.rates.ExchangeRate;
-import org.agoncal.application.currencyexchange.portfolio.trades.Trade;
+import org.agoncal.application.currencyexchange.portfolio.currency.ExchangeRate;
+import org.agoncal.application.currencyexchange.portfolio.trade.Trade;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.RestForm;
 

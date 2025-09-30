@@ -2,8 +2,8 @@ package org.agoncal.application.currencyexchange.portfolio;
 
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import org.agoncal.application.currencyexchange.portfolio.rates.ExchangeRate;
-import org.agoncal.application.currencyexchange.portfolio.trades.Trade;
+import org.agoncal.application.currencyexchange.portfolio.currency.ExchangeRate;
+import org.agoncal.application.currencyexchange.portfolio.trade.Trade;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

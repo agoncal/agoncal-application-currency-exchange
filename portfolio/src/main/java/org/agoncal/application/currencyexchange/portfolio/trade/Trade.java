@@ -1,22 +1,15 @@
-package org.agoncal.application.currencyexchange.trades;
-
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
+package org.agoncal.application.currencyexchange.portfolio.trade;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record Trade(
 
-    @NotBlank
     String userId,
     LocalDateTime timestamp,
-    @DecimalMin("0")
     BigDecimal usdAmount,
-    @NotBlank
     String toCurrency,
     BigDecimal convertedAmount,
-    @DecimalMin("0")
     BigDecimal exchangeRate
 ) {
 

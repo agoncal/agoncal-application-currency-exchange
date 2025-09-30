@@ -1,4 +1,4 @@
-package org.agoncal.application.currencyexchange.trades;
+package org.agoncal.application.currencyexchange.trade;
 
 import static org.junit.jupiter.api.Assertions.*;
 

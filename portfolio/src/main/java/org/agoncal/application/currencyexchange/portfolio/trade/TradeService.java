@@ -1,7 +1,6 @@
-package org.agoncal.application.currencyexchange.portfolio.trades;
+package org.agoncal.application.currencyexchange.portfolio.trade;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
 import java.math.BigDecimal;
