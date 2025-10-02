@@ -19,7 +19,7 @@ mvn clean package -Dmaven.test.skip=true
 Start all services with Docker Compose:
 
 ```bash
-docker compose up
+docker compose -p currencyexchange -f docker-compose-jvm.yml up -d
 ```
 
 Access the application at `http://localhost:8080`
