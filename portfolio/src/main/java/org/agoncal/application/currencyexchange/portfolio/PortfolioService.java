@@ -2,16 +2,15 @@ package org.agoncal.application.currencyexchange.portfolio;
 
 import io.quarkus.grpc.GrpcClient;
 import jakarta.enterprise.context.ApplicationScoped;
-
-import static org.agoncal.application.currencyexchange.portfolio.User.USER_PORTFOLIOS;
-
 import org.agoncal.application.currencyexchange.currency.CurrencyRequest;
 import org.agoncal.application.currencyexchange.currency.Empty;
-import org.agoncal.application.currencyexchange.currency.ExchangeRateServiceGrpc;
 import org.agoncal.application.currencyexchange.currency.ExchangeRate;
+import org.agoncal.application.currencyexchange.currency.ExchangeRateServiceGrpc;
+import static org.agoncal.application.currencyexchange.portfolio.User.USER_PORTFOLIOS;
 import org.agoncal.application.currencyexchange.portfolio.trade.Trade;
 import org.agoncal.application.currencyexchange.portfolio.trade.TradeService;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.logging.Logger;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -20,6 +19,8 @@ import java.util.List;
 
 @ApplicationScoped
 public class PortfolioService {
+
+    private static final Logger LOG = Logger.getLogger(PortfolioService.class);
 
     @GrpcClient("currency")
     ExchangeRateServiceGrpc.ExchangeRateServiceBlockingStub exchangeRateService;
@@ -35,19 +36,27 @@ public class PortfolioService {
     }
 
     public List<ExchangeRate> getAllCurrentRates() {
+        LOG.info("Get all currency rates");
+        
         return exchangeRateService.getAllCurrentRates(Empty.newBuilder().build()).getRatesList();
     }
 
     public ExchangeRate getCurrentRate(String currencyCode) {
+        LOG.info("Get currency rate: " + currencyCode);
+
         return exchangeRateService.getCurrentRate(CurrencyRequest.newBuilder().setCurrencyCode(currencyCode).build()).getRate();
     }
 
     public void executeTrade(Trade trade) {
+        LOG.info("Execute trade: " + trade);
+
         tradeService.executeTrade(trade);
         updateUserPortfolio(trade);
     }
 
     public List<Trade> getAllTrades(String userId) {
+        LOG.info("Get all trades");
+
         return tradeService.getAllTrades(userId);
     }
 
