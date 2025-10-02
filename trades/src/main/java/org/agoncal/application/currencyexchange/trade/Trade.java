@@ -17,16 +17,17 @@ public record Trade(
     String toCurrency,
     BigDecimal convertedAmount,
     @DecimalMin("0")
-    BigDecimal exchangeRate
+    BigDecimal exchangeRate,
+    String status
 ) {
 
     // Constructor for creating new trades (before execution)
     public Trade(String userId, BigDecimal usdAmount, String toCurrency, BigDecimal exchangeRate) {
-        this(userId, LocalDateTime.now(), usdAmount, toCurrency, null, exchangeRate);
+        this(userId, LocalDateTime.now(), usdAmount, toCurrency, null, exchangeRate, "PENDING");
     }
 
     public Trade(String userId, BigDecimal usdAmount, String toCurrency, BigDecimal convertedAmount, BigDecimal exchangeRate) {
-        this(userId, LocalDateTime.now(), usdAmount, toCurrency, convertedAmount, exchangeRate);
+        this(userId, LocalDateTime.now(), usdAmount, toCurrency, convertedAmount, exchangeRate, "PENDING");
     }
 }
 

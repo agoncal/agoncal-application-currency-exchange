@@ -24,8 +24,11 @@ public class TradeService {
         // Calculate converted amount
         BigDecimal convertedAmount = trade.usdAmount().multiply(trade.exchangeRate());
 
-        // Create new trade with converted amount
-        Trade executedTrade = new Trade(trade.userId(), trade.usdAmount(), trade.toCurrency(), convertedAmount, trade.exchangeRate());
+        // Determine status based on exchange rate
+        String status = trade.exchangeRate().compareTo(BigDecimal.ZERO) == 0 ? "PENDING" : "COMPLETED";
+
+        // Create new trade with converted amount and status
+        Trade executedTrade = new Trade(trade.userId(), trade.timestamp(), trade.usdAmount(), trade.toCurrency(), convertedAmount, trade.exchangeRate(), status);
 
         // Store trade in history
         tradeHistory.computeIfAbsent(trade.userId(), k -> new ArrayList<>()).add(executedTrade);

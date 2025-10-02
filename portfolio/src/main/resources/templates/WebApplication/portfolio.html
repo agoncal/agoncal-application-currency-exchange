@@ -193,6 +193,7 @@
                                             <th>Target Currency</th>
                                             <th class="text-end">Exchange Rate</th>
                                             <th class="text-end">Converted Amount</th>
+                                            <th class="text-end">Status</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -215,6 +216,13 @@
                                                         <strong>{trade.convertedAmount.formatAmount} {trade.toCurrency}</strong>
                                                     {#else}
                                                         <span class="text-muted">-</span>
+                                                    {/if}
+                                                </td>
+                                                <td class="text-end">
+                                                    {#if trade.status == 'COMPLETED'}
+                                                        <span class="badge bg-success">{trade.status}</span>
+                                                    {#else}
+                                                        <span class="badge bg-warning text-dark">{trade.status}</span>
                                                     {/if}
                                                 </td>
                                             </tr>
