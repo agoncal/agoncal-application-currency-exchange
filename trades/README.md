@@ -51,7 +51,7 @@ GET /api/trades/{userId}
 // Trade (for the response)
 {
     "userId": "user123",
-    "timestamp": "2024-01-15T10:30:45"
+    "timestamp": "2024-01-15T10:30:45",
     "status": "COMPLETED",
     "usdAmount": 100.00,
     "toCurrency": "EUR",

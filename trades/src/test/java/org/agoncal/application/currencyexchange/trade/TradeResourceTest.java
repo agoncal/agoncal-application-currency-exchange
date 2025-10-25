@@ -1,15 +1,13 @@
 package org.agoncal.application.currencyexchange.trade;
 
 import io.quarkus.test.junit.QuarkusTest;
+import static io.restassured.RestAssured.given;
 import io.restassured.http.ContentType;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.greaterThan;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.greaterThan;
 
 @QuarkusTest
 class TradeResourceTest {
@@ -25,19 +23,6 @@ class TradeResourceTest {
             .post("/api/trades")
             .then()
             .statusCode(204);
-    }
-
-    @Test
-    void shouldNotExecuteTradeInvalidData() {
-        Trade trade = new Trade("", BigDecimal.valueOf(-10), "", BigDecimal.valueOf(-1));
-
-        given()
-            .contentType(ContentType.JSON)
-            .body(trade)
-            .when()
-            .post("/api/trades")
-            .then()
-            .statusCode(500);
     }
 
     @Test

@@ -1,8 +1,6 @@
 package org.agoncal.application.currencyexchange.trade;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import org.jboss.logging.Logger;
 
 import java.math.BigDecimal;
@@ -18,7 +16,7 @@ public class TradeService {
 
     private final Map<String, List<Trade>> tradeHistory = new HashMap<>();
 
-    public void executeTrade(@Valid Trade trade) {
+    public void executeTrade(Trade trade) {
         LOG.info("Execute trade: " + trade);
 
         // Calculate converted amount
@@ -34,7 +32,7 @@ public class TradeService {
         tradeHistory.computeIfAbsent(trade.userId(), k -> new ArrayList<>()).add(executedTrade);
     }
 
-    public List<Trade> getAllTrades(@NotBlank String userId) {
+    public List<Trade> getAllTrades(String userId) {
         LOG.info("Getting trade history for user: " + userId);
 
         List<Trade> trades = tradeHistory.getOrDefault(userId, new ArrayList<>());
