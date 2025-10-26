@@ -58,7 +58,10 @@ class TradeResourceTest {
             .body("[0].userId", is("user456"))
             .body("[0].toCurrency", is("EUR"))
             .body("[0].usdAmount", is(100))
-            .body("[0].exchangeRate", is(0.92f));
+            .body("[0].exchangeRate", is(0.92f))
+            .body("[0].convertedAmount", is(92.00f))
+            .body("[0].status", is("COMPLETED"))
+            .body("[0].timestamp", is(org.hamcrest.Matchers.notNullValue()));
     }
 
     @Test
